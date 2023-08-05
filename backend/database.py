@@ -5,6 +5,7 @@ from pymongo import MongoClient
 import time, bcrypt, hashlib
 from dotenv import load_dotenv
 import os
+from bson import objectid
 
 
 class DB:
@@ -43,8 +44,22 @@ class DB:
     def get_artist_by_id(self, _id: int):
         return list(self.artists.find({}).sort([['_id', 1]]).skip(_id - 1).limit(1))[0]
 
-    def get_setlist_by_id(self, _id: int):
-        return list(self.setlists.find({}).sort([['_id', 1]]).skip(_id - 1).limit(1))[0]
+    def get_setlist_by_id(self, _id: str):
+        data = []
+        if objectid.ObjectId.is_valid(_id):
+            data = list(self.setlists.find({"_id": objectid.ObjectId(_id)}).sort([['_id', 1]]).limit(1))
+        return data[0] if len(data) else None
+
+    def delete_setlist(self, _id: str):
+        return self.setlists.delete_one({"_id": objectid.ObjectId(_id)}).deleted_count
+
+    def update_setlist(self, _id: str, new_json: dict):
+        new_setlist = self.setlists.update_one(
+            {"_id": objectid.ObjectId(_id)},
+            {"$set": new_json}, upsert=False)
+        if new_setlist.matched_count == 0:
+            return None
+        return self.get_setlist_by_id(_id)
 
     def insert_artist(self, name: str, songs: list, users: list):
         return self.artists.insert_one({
@@ -71,11 +86,12 @@ class DB:
         return self.artists.delete_one({"_id": artists[_id]["_id"]}).deleted_count
 
     def add_setlist(self, name: str, artist: str, songs: list):
-        return self.users.insert_one({
+        setlist_id = self.setlists.insert_one({
             "name": name,
             "artist": artist,
             "songs": songs
         }).inserted_id
+        return self.get_setlist_by_id(str(setlist_id))
 
     def get_setlists_by_artist(self, artist: str):
         return list(self.setlists.find({"artist": artist}))
