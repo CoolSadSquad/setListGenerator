@@ -1,13 +1,11 @@
 import React from 'react';
+import {Logo} from "./index";
 
 const NavBar = () => {
     return (
         <div className="">
-            <div className="Logo">
-
-            </div>
+            <Logo/>
             <div className="Link">
-
             </div>
         </div>
     );

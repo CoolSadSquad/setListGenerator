@@ -25,3 +25,59 @@ code {
   font-family: Inter, serif;
   font-weight: 600;
 }
+@media (max-width: 1280px) {
+  .grid-login{
+    transition: grid-template-columns 0.4s ease-in-out;
+    grid-template-columns: 50% 50%;
+  }
+  .logo-right{
+    right: 8rem;
+    transition: right 0.4s ease-in-out;
+  }
+}
+@media (max-width: 1220px) {
+  .logo-right{
+    right: 11rem;
+    transition: right 0.4s ease-in-out;
+  }
+}
+@media (min-width:1280px) {
+  .grid-login{
+    transition: grid-template-columns 0.4s ease-in-out;
+    grid-template-columns: 60% 40%;
+  }
+  .logo-right{
+    right: 12rem;
+    transition: right 0.4s ease-in-out;
+  }
+}
+@media (min-width: 1860px){
+  .grid-login{
+    transition: grid-template-columns 0.4s ease-in-out;
+    grid-template-columns: 75% 25%;
+  }
+  .logo-right{
+    right: 10rem;
+    transition: right 0.4s ease-in-out;
+  }
+}
+
+.text-gradient{
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  -moz-background-clip: text;
+  -moz-text-fill-color: transparent;
+}
+
+.message-icon{
+  background-image: url("assets/message.svg");
+  background-position: 4px;
+}
+.password-icon{
+  background-image: url("assets/padlock.svg");
+  background-position: 4px;
+}
+.username-icon{
+  background-image: url("assets/user.svg");
+  background-position: 4px
+}
