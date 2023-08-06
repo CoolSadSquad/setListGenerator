@@ -35,14 +35,59 @@ class DB:
     def get_user(self, login):
         return self.users.find_one({"login": login})
 
+    # DONE: Artist CRUD
+
     def get_all_artists(self):
         return list(self.artists.find({}).sort([['_id', 1]]))
 
+    def get_artist_by_id(self, _id: str):
+        data = []
+        if objectid.ObjectId.is_valid(_id):
+            data = list(self.artists.find({"_id": objectid.ObjectId(_id)}).sort([['_id', 1]]).limit(1))
+        return data[0] if len(data) else None
+
+    def delete_artist(self, _id: str):
+        return self.artists.delete_one({"_id": objectid.ObjectId(_id)}).deleted_count
+
+    def update_artist(self, _id: str, new_json: dict):
+        new_artist = self.artists.update_one(
+            {"_id": objectid.ObjectId(_id)},
+            {"$set": new_json}, upsert=False)
+        if new_artist.matched_count == 0:
+            return None
+        return self.get_artist_by_id(_id)
+
+    def get_artist_by_name(self, name: str):
+        return list(self.artists.find({"name": name}))
+
+    def add_artist(self, name: str, songs: list, users: list):
+        artist_id = self.artists.insert_one({
+            "name": name,
+            "songs": songs,
+            "users": users
+        }).inserted_id
+        return self.get_artist_by_id(str(artist_id))
+
+    def add_artist_song(self, _id: str, song: str):
+        new_artist = self.artists.update_one(
+            {"_id": objectid.ObjectId(_id)},
+            {"$push": {"songs": song}}, upsert=False)
+        if new_artist.matched_count == 0:
+            return None
+        return self.get_artist_by_id(_id)
+
+    def delete_artist_song(self, _id: str, song: str):
+        new_artist = self.artists.update_one(
+            {"_id": objectid.ObjectId(_id)},
+            {"$pull": {"songs": song}}, upsert=False)
+        if new_artist.matched_count == 0:
+            return None
+        return self.get_artist_by_id(_id)
+
+    # DONE: Setlist CRUD
+
     def get_all_setlists(self):
         return list(self.setlists.find({}).sort([['_id', 1]]))
-
-    def get_artist_by_id(self, _id: int):
-        return list(self.artists.find({}).sort([['_id', 1]]).skip(_id - 1).limit(1))[0]
 
     def get_setlist_by_id(self, _id: str):
         data = []
@@ -61,30 +106,6 @@ class DB:
             return None
         return self.get_setlist_by_id(_id)
 
-    def insert_artist(self, name: str, songs: list, users: list):
-        return self.artists.insert_one({
-            "name": name,
-            "songs": songs,
-            "users": users
-        }).inserted_id
-
-    def get_artist_by_name(self, name: str):
-        return list(self.artists.find({"name": name}))
-
-    def update_artist(self, _id: int, new_d: dict):
-        _id -= 1
-
-        artists = list(self.artists.find({}).sort([['_id', 1]]))
-        return self.artists.update_one(
-            {'_id': artists[_id]["_id"]},
-            {'$set': new_d}, upsert=False).modified_count
-
-    def remove_artist(self, _id: int):
-        _id -= 1
-
-        artists = list(self.artists.find({}).sort([['_id', 1]]))
-        return self.artists.delete_one({"_id": artists[_id]["_id"]}).deleted_count
-
     def add_setlist(self, name: str, artist: str, songs: list):
         setlist_id = self.setlists.insert_one({
             "name": name,
@@ -96,12 +117,7 @@ class DB:
     def get_setlists_by_artist(self, artist: str):
         return list(self.setlists.find({"artist": artist}))
 
-    def add_new_song_to_artist(self, artist_name: str, song: str):
-        artist = self.get_artist_by_name(artist_name)[0]
-        songs = list(artist["songs"])
-        songs.append(song)
-        new_d = {"songs": songs}
-        return self.update_artist(artist["_id"], new_d)
+    # FIXME: delete rest
 
     def add_new_user_to_artist(self, artist_name: str, user: str):
         artist = self.get_artist_by_name(artist_name)[0]

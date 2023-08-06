@@ -24,5 +24,22 @@ class Setlist(SetlistBase):
         return data
 
 
+class ArtistBase(BaseModel):
+    name: str
+    songs: list
+    users: list
+
+
+class Artist(ArtistBase):
+    id: Union[str, Any]
+
+    @root_validator(pre=True)
+    def _set_id(cls, data):
+        id = data.get("_id")
+        if id:
+            data["id"] = str(id)
+        return data
+
+
 class DeleteSchema(BaseModel):
     deleted_count: int
