@@ -1,5 +1,5 @@
 import React from 'react';
-import wallpaper from '../assets/wallpaper.jpg'
+import wallpaper from '../assets/images/wallpaper.jpg'
 import {Link} from "react-router-dom";
 import {Logo} from "./index";
 const LoginPage = () => {
@@ -47,7 +47,7 @@ const LoginPage = () => {
                             Forgot Password?
                         </div>
                     </div>
-                    <Link to="/login">
+                    <Link to="/main">
                         <div className="h-14 px-5 py-4 bg-gradient-to-r from-emerald-500 to-sky-300 rounded-[32px] justify-center items-center gap-2 inline-flex w-[24.4rem]">
                             <div className="text-white text-base text-600 leading-normal select-none">Login</div>
                         </div>

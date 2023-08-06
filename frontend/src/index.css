@@ -51,10 +51,10 @@ code {
     transition: right 0.4s ease-in-out;
   }
 }
-@media (min-width: 1860px){
+@media (min-width: 1820px){
   .grid-login{
     transition: grid-template-columns 0.4s ease-in-out;
-    grid-template-columns: 75% 25%;
+    grid-template-columns: 70% 30%;
   }
   .logo-right{
     right: 10rem;
@@ -70,14 +70,19 @@ code {
 }
 
 .message-icon{
-  background-image: url("assets/message.svg");
+  background-image: url("assets/images/message.svg");
   background-position: 4px;
 }
 .password-icon{
-  background-image: url("assets/padlock.svg");
+  background-image: url("assets/images/padlock.svg");
   background-position: 4px;
 }
 .username-icon{
-  background-image: url("assets/user.svg");
+  background-image: url("assets/images/user.svg");
   background-position: 4px
+}
+.search-icon{
+  background-image: url("assets/images/search.svg");
+  background-size: contain;
+  background-position: 4px;
 }

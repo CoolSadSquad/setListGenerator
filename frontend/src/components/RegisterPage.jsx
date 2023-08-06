@@ -1,5 +1,5 @@
 import React from 'react';
-import wallpaper from '../assets/wallpaper.jpg'
+import wallpaper from '../assets/images/wallpaper.jpg'
 import {Link} from "react-router-dom";
 import {Logo} from "./index";
 const RegisterPage = () => {
