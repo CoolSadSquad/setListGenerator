@@ -17,13 +17,13 @@ class DB:
         self.users = self.database["users"]
         self.artists = self.database["artists"]
 
-    def add_user(self, name: str, login: str, password_hash: str, salt: str):
-        return self.users.insert_one({
-            "name": name,
-            "login": login,
-            "password_hash": password_hash,
-            "salt": salt
-        }).inserted_id
+    # def add_user(self, email: str, login: str, password_hash: str, salt: str):
+    #     return self.users.insert_one({
+    #         "email": email,
+    #         "login": login,
+    #         "password_hash": password_hash,
+    #         "salt": salt
+    #     }).inserted_id
 
     def update_user_token(self, phone):
         token = phone + str(time.time()) + phone * 2 + str(time.time())
@@ -114,8 +114,59 @@ class DB:
         }).inserted_id
         return self.get_setlist_by_id(str(setlist_id))
 
-    def get_setlists_by_artist(self, artist: str):
-        return list(self.setlists.find({"artist": artist}))
+    # TODO: Users CRUD
+
+    def get_all_users(self):
+        return list(self.users.find({}).sort([['_id', 1]]))
+
+    def get_user_by_id(self, _id: str):
+        data = []
+        if objectid.ObjectId.is_valid(_id):
+            data = list(self.users.find({"_id": objectid.ObjectId(_id)}).sort([['_id', 1]]).limit(1))
+        return data[0] if len(data) else None
+
+    def get_user_by_login(self, login: str):
+        return list(self.users.find({"login": login}))
+
+    def delete_user(self, _id: str):
+        return self.users.delete_one({"_id": objectid.ObjectId(_id)}).deleted_count
+
+    def update_user(self, _id: str, new_json: dict):
+        new_user = self.users.update_one(
+            {"_id": objectid.ObjectId(_id)},
+            {"$set": new_json}, upsert=False)
+        if new_user.matched_count == 0:
+            return None
+        return self.get_user_by_id(_id)
+
+    def add_user(self, login: str, email: str, password: str):
+        salt = bcrypt.gensalt()
+        password = bytes(password, 'utf-8')
+        password_hash = bcrypt.hashpw(password, salt)
+        # print(password_hash, salt)
+        user_id = self.users.insert_one({
+            "login": login,
+            "email": email,
+            "password_hash": password_hash,
+            "salt": salt,
+            "artists": []
+        }).inserted_id
+        # print(user_id)
+        return self.get_user_by_id(str(user_id))
+
+    def get_user_by_email(self, email: str):
+        return list(self.users.find({"email": email}))
+
+    def login_user(self, email: str, password: str):
+        user = self.get_user_by_email(email)
+
+        if len(user):
+            if bcrypt.checkpw(bytes(password, "utf-8"), user[0]["password_hash"]):
+                return user[0]
+            else:
+                return None
+        else:
+            return None
 
     # FIXME: delete rest
 

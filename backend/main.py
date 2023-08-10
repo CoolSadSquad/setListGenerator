@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from database import DB
 from typing import Union, List
 from pydantic import Json
 import schemas
 from enum import Enum
+from fastapi.security import OAuth2PasswordBearer
+from typing import Annotated
+
 
 app = FastAPI()
 
@@ -29,9 +32,11 @@ class Tags(Enum):
     setlists = "Setlists"
     artists = "Artists"
     common = "Common"
+    users = "Users"
 
 
 # DONE: Setlists API
+
 
 @app.get("/setlists/", response_model=List[schemas.Setlist], tags=[Tags.setlists])
 async def get_all_setlists():
@@ -98,6 +103,42 @@ async def add_artist_song(artist_id: str, song: str):
 @app.delete("/artists/song/{artist_id}", response_model=Union[schemas.Artist, None], tags=[Tags.artists])
 async def delete_artist_song(artist_id: str, song: str):
     return db.delete_artist_song(artist_id, song)
+
+
+# TODO: Users API
+
+
+@app.get("/users/", response_model=List[schemas.User], tags=[Tags.users])
+async def get_all_users():
+    return db.get_all_users()
+
+
+@app.get("/users/{user_id}", response_model=Union[schemas.User, None], tags=[Tags.users])
+async def get_user_by_id(user_id: str):
+    return db.get_user_by_id(user_id)
+
+
+@app.get("/users/login/{login}", response_model=List[schemas.User], tags=[Tags.users])
+async def get_user_by_login(login: str):
+    return db.get_user_by_login(login)
+
+
+@app.post("/login/", response_model=Union[schemas.User, None], tags=[Tags.users])
+async def login_user(credentials: schemas.UserLogin):
+    email = credentials.email
+    password = credentials.password
+    return db.login_user(email, password)
+
+
+@app.post("/users/", response_model=Union[schemas.User, None], tags=[Tags.users])
+async def create_user(data: schemas.UserCreate):
+    return db.add_user(data.login, data.email, data.password)
+
+
+@app.put("/users/{user_id}", response_model=Union[schemas.User, None], tags=[Tags.users])
+async def update_artist(user_id: str, new_json: Json):
+    return db.update_user(user_id, dict(new_json))
+
 
 
 # TODO: Common methods
