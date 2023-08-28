@@ -144,6 +144,8 @@ class DB:
         password = bytes(password, 'utf-8')
         password_hash = bcrypt.hashpw(password, salt)
         # print(password_hash, salt)
+        if len(self.get_user_by_login(login)) and len(self.get_user_by_email(email)):
+            return {"error": "User already exists"}
         user_id = self.users.insert_one({
             "login": login,
             "email": email,

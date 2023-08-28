@@ -13,6 +13,10 @@ class SetlistBase(BaseModel):
     songs: List[str] = []
 
 
+class SetlistCreate(SetlistBase):
+    pass
+
+
 class Setlist(SetlistBase):
     id: Union[str, Any]
 
@@ -28,6 +32,15 @@ class ArtistBase(BaseModel):
     name: str
     songs: List[str] = []
     users: List[str] = []
+
+
+class ArtistCreate(ArtistBase):
+    pass
+
+
+class ArtistSong(BaseModel):
+    id: str
+    song: str
 
 
 class Artist(ArtistBase):
@@ -69,5 +82,18 @@ class User(UserBase):
         return data
 
 
-class DeleteSchema(BaseModel):
+class Update(BaseModel):
+    id: str
+    new_json: dict
+
+
+class Delete(BaseModel):
+    id: str
+
+
+class DeleteResponse(BaseModel):
     deleted_count: int
+
+
+class Error(BaseModel):
+    error: str

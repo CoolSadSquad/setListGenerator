@@ -49,18 +49,18 @@ async def get_setlist(setlist_id: str):
 
 
 @app.post("/setlists/", response_model=schemas.Setlist, tags=[Tags.setlists])
-async def create_setlist(name: str, artist: str, songs: Json):
-    return db.add_setlist(name, artist, songs)
+async def create_setlist(setlist: schemas.SetlistCreate):
+    return db.add_setlist(setlist.name, setlist.artist, setlist.songs)
 
 
-@app.delete("/setlists/{setlist_id}", response_model=schemas.DeleteSchema, tags=[Tags.setlists])
-async def delete_setlist(setlist_id: str):
-    return {"deleted_count": db.delete_setlist(setlist_id)}
+@app.delete("/setlists/{setlist_id}", response_model=schemas.DeleteResponse, tags=[Tags.setlists])
+async def delete_setlist(item: schemas.Delete):
+    return {"deleted_count": db.delete_setlist(item.id)}
 
 
 @app.put("/setlists/{setlist_id}", response_model=Union[schemas.Setlist, None], tags=[Tags.setlists])
-async def update_setlist(setlist_id: str, new_json: Json):
-    return db.update_setlist(setlist_id, dict(new_json))
+async def update_setlist(item: schemas.Update):
+    return db.update_setlist(item.id, item.new_json)
 
 
 # DONE: Artists API
@@ -81,28 +81,28 @@ async def get_artist_by_name(name: str):
 
 
 @app.post("/artists/", response_model=schemas.Artist, tags=[Tags.artists])
-async def create_artist(name: str, songs: Json, users: Json):
-    return db.add_artist(name, songs, users)
+async def create_artist(artist: schemas.ArtistCreate):
+    return db.add_artist(artist.name, artist.songs, artist.users)
 
 
-@app.delete("/artists/{artist_id}", response_model=schemas.DeleteSchema, tags=[Tags.artists])
-async def delete_artist(artist_id: str):
-    return {"deleted_count": db.delete_artist(artist_id)}
+@app.delete("/artists/{artist_id}", response_model=schemas.DeleteResponse, tags=[Tags.artists])
+async def delete_artist(item: schemas.Delete):
+    return {"deleted_count": db.delete_artist(item.id)}
 
 
 @app.put("/artists/{artist_id}", response_model=Union[schemas.Artist, None], tags=[Tags.artists])
-async def update_artist(artist_id: str, new_json: Json):
-    return db.update_artist(artist_id, dict(new_json))
+async def update_artist(item: schemas.Update):
+    return db.update_artist(item.id, item.new_json)
 
 
 @app.put("/artists/song/{artist_id}", response_model=Union[schemas.Artist, None], tags=[Tags.artists])
-async def add_artist_song(artist_id: str, song: str):
-    return db.add_artist_song(artist_id, song)
+async def add_artist_song(item: schemas.ArtistSong):
+    return db.add_artist_song(item.id, item.song)
 
 
 @app.delete("/artists/song/{artist_id}", response_model=Union[schemas.Artist, None], tags=[Tags.artists])
-async def delete_artist_song(artist_id: str, song: str):
-    return db.delete_artist_song(artist_id, song)
+async def delete_artist_song(item: schemas.ArtistSong):
+    return db.delete_artist_song(item.id, item.song)
 
 
 # TODO: Users API
@@ -130,14 +130,14 @@ async def login_user(credentials: schemas.UserLogin):
     return db.login_user(email, password)
 
 
-@app.post("/users/", response_model=Union[schemas.User, None], tags=[Tags.users])
+@app.post("/users/", response_model=Union[schemas.User, None, schemas.Error], tags=[Tags.users])
 async def create_user(data: schemas.UserCreate):
     return db.add_user(data.login, data.email, data.password)
 
 
 @app.put("/users/{user_id}", response_model=Union[schemas.User, None], tags=[Tags.users])
-async def update_artist(user_id: str, new_json: Json):
-    return db.update_user(user_id, dict(new_json))
+async def update_user(item: schemas.Update):
+    return db.update_user(item.id, item.new_json)
 
 
 
