@@ -1,9 +1,37 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {NavBar, SetlistCard, SongCard} from "./index";
+import { useJwt } from "react-jwt";
+import { isExpired, decodeToken } from "react-jwt";
+import {useCookies} from "react-cookie";
 
 const MainPage = () => {
+    const [cookies, setCookie] = useCookies(['access_token'])
+    const token = cookies.access_token
+    const [createNewArtist, setCreateNewArtist] = useState(false)
+    const [username, setUsername] = useState(decodeToken(token).sub.login)
+    const [artistName, setArtistName] = useState('')
+    const [artistList, setArtistList] = useState(decodeToken(token).sub.artists)
+
+    useEffect(() => {
+        if (artistList.length === 0){
+            setCreateNewArtist(true)
+        }
+    }, [createNewArtist]);
     return (
         <div className="text-white text-500">
+            {createNewArtist ?
+            <div className="w-screen h-screen bg-black opacity-40 z-0">
+                <div className="w-1/2 h-3/4 bg-[#020D14] absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] z-10 rounded-lg">
+                    <div className="flex flex-col z-30">
+                        <div className="z-40">
+                            Create a new artist
+                        </div>
+                        <div>
+                            Name of the artist
+                        </div>
+                        <input onChange={e => setArtistName(e.target.value)} value={artistName} type="text" className="border-b bg-no-repeat bg-left message-icon pl-8 w-[24.4rem]" style={{backgroundColor: "#020D14"}} placeholder="Enter your artist name" required/>
+                    </div>
+                </div>
             <NavBar/>
             <div className="flex flex-row p-5 gap-x-16 justify-evenly">
                 <div className="flex flex-col gap-y-5">
@@ -79,6 +107,8 @@ const MainPage = () => {
                     </div>
                 </div>
             </div>
+            </div>
+            : <></>}
         </div>
     );
 };

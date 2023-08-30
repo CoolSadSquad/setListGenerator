@@ -1,8 +1,51 @@
-import React from 'react';
+import React, {useState} from 'react';
 import wallpaper from '../assets/images/wallpaper.jpg'
-import {Link} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import {Logo} from "./index";
+import {FiEye, FiEyeOff} from "react-icons/fi"
 const RegisterPage = () => {
+    const BACKEND_URL = process.env.REACT_APP_BACKEND_URL
+    const [email, setEmail] = useState('')
+    const [username, setUsername] = useState('')
+    const [password, setPassword] = useState('')
+    const [repeatedPassword, setRepeatedPassword] = useState('')
+    const [passwordEqual, setPasswordEqual] = useState(true)
+    const [credentialsValid, setCredentialsValid] = useState(true)
+    const navigate = useNavigate();
+    const [showInput, setShowInput] = useState(false);
+    const [showRepeatedInput, setShowRepeatedInput] = useState(false);
+    const [userExists, setUserExists] = useState(false)
+    const Registration = () => {
+        if (username.length !== 0 && password.length !== 0 && email.length !== 0){
+            setCredentialsValid(true)
+            if (password === repeatedPassword){
+                setPasswordEqual(true)
+                fetch(BACKEND_URL+'/users/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({login: username, email: email, password: password}),
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if(data.error !== undefined){
+                            setUserExists(true)
+                        }else{
+                            navigate("/login")
+                        }
+
+                    }
+                    )
+            }
+            else {
+                setPasswordEqual(false)
+            }
+        }
+        else {
+            setCredentialsValid(false)
+        }
+    }
     return (
         <div>
             <div className="absolute logo-right pt-6">
@@ -30,31 +73,43 @@ const RegisterPage = () => {
                         Email
                     </div>
                     <div className="text-white text-500 mb-12">
-                        <input type="text" className="border-b bg-no-repeat bg-left message-icon pl-8 w-[24.4rem]" style={{backgroundColor: "#020D14"}} placeholder="Enter your email address"  required/>
+                        <input onChange={e => setEmail(e.target.value)} value={email} type="text" className="border-b bg-no-repeat bg-left message-icon pl-8 w-[24.4rem]" style={{backgroundColor: "#020D14"}} placeholder="Enter your email address"  required/>
                     </div>
                     <div className="text-white text-500 select-none mb-2 text-[13px]">
                         Username
                     </div>
                     <div className="text-white text-500 mb-12">
-                        <input type="text" className="border-b bg-no-repeat bg-left username-icon pl-8 w-[24.4rem]" style={{backgroundColor: "#020D14"}} placeholder="Enter your username"  required/>
+                        <input onChange={e => setUsername(e.target.value)} value={username} type="text" className="border-b bg-no-repeat bg-left username-icon pl-8 w-[24.4rem]" style={{backgroundColor: "#020D14"}} placeholder="Enter your username"  required/>
                     </div>
                     <div className="text-white text-500 text-[13px] mb-2 select-none">
                         Password
                     </div>
-                    <div className="text-white text-500 mb-12">
-                        <input type="text" className="border-b bg-no-repeat bg-left password-icon pl-8 w-[24.4rem]" style={{backgroundColor: "#020D14"}} placeholder="Enter your password"  required/>
+                    <div className="text-white text-500 mb-12 flex justify-between items-center w-[24.4rem] border-b">
+                        <input onChange={e => setPassword(e.target.value)} value={password} type={showInput ? "text" : "password"} className="border-none focus:border-none bg-no-repeat bg-left password-icon pl-8 w-[24.4rem]" style={{backgroundColor: "#020D14"}} placeholder="Enter your password"  required/>
+                        {showInput ? <FiEyeOff className="reveal" onClick={() => setShowInput(!showInput)} /> : <FiEye className="reveal" onClick={() => setShowInput(!showInput)}/>}
                     </div>
                     <div className="text-white text-500 text-[13px] mb-2 select-none">
                         Confirm Password
                     </div>
-                    <div className="text-white text-500 mb-16">
-                        <input type="text" className="border-b bg-no-repeat bg-left password-icon pl-8 w-[24.4rem]" style={{backgroundColor: "#020D14"}} placeholder="Confirm your password"  required/>
+                    <div className="text-white text-500 mb-16 flex justify-between items-center w-[24.4rem] border-b">
+                        <input onChange={e => setRepeatedPassword(e.target.value)} value={repeatedPassword} type={showRepeatedInput ? "text" : "password"} className="border-none focus:border-none bg-no-repeat bg-left password-icon pl-8 w-[24.4rem]" style={{backgroundColor: "#020D14"}} placeholder="Confirm your password" required/>
+                        {showRepeatedInput ? <FiEyeOff className="reveal" onClick={() => setShowRepeatedInput(!showRepeatedInput)} /> : <FiEye className="reveal" onClick={() => setShowRepeatedInput(!showRepeatedInput)}/>}
                     </div>
-                    <Link to="/login">
-                        <div className="h-14 px-5 py-4 bg-gradient-to-r from-emerald-500 to-sky-300 rounded-[32px] justify-center items-center gap-2 inline-flex w-[24.4rem]">
-                            <div className="text-white text-base text-600 leading-normal select-none">Register</div>
-                        </div>
-                    </Link>
+                    {credentialsValid ? <></> :
+                        <div className="text-red-800 text-500 mb-16">
+                        Please enter your credentials
+                    </div>}
+                    {passwordEqual ? <></> :
+                    <div className="text-red-800 text-500 mb-16">
+                        Passwords dont match
+                    </div>}
+                    {userExists ? <div className="text-red-800 text-500 mb-16">
+                        User already exists
+                    </div> :
+                       <></> }
+                    <div onClick={Registration} className="h-14 px-5 py-4 bg-gradient-to-r from-emerald-500 to-sky-300 rounded-[32px] justify-center items-center gap-2 inline-flex w-[24.4rem]">
+                        <div className="text-white text-base text-600 leading-normal select-none">Register</div>
+                    </div>
                 </div>
             </div>
         </div>

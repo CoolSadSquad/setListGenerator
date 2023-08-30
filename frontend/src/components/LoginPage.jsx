@@ -1,8 +1,44 @@
-import React from 'react';
+import React, {useState} from 'react';
 import wallpaper from '../assets/images/wallpaper.jpg'
-import {Link} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import {Logo} from "./index";
+import {FiEye, FiEyeOff} from "react-icons/fi";
+import {useCookies} from "react-cookie";
 const LoginPage = () => {
+    const BACKEND_URL = process.env.REACT_APP_BACKEND_URL
+    const [password, setPassword] = useState('')
+    const [email, setEmail] = useState('')
+    const [credentialsValid, setCredentialsValid] = useState(true)
+    const [loginValid, setLoginValid] = useState(true)
+    const navigate = useNavigate();
+    const [showInput, setShowInput] = useState(false)
+    const [cookies, setCookie] = useCookies(['access_token'])
+    const Login = () => {
+        if (password.length !== 0 && email.length !== 0){
+            setCredentialsValid(true)
+            fetch(BACKEND_URL + '/login/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({email: email, password: password}),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data !== null){
+                        setLoginValid(true)
+                        setCookie('access_token', `${data.access_token}`, {path: '/'})
+                        navigate("/main")
+                    }
+                    else {
+                        setLoginValid(false)
+                    }
+                })
+        }
+        else {
+            setCredentialsValid(false)
+        }
+    }
     return (
         <div>
             <div className="absolute logo-right pt-6">
@@ -30,13 +66,14 @@ const LoginPage = () => {
                         Email
                     </div>
                     <div className="text-white text-500 mb-12">
-                        <input type="text" className="border-b bg-no-repeat bg-left message-icon pl-8 w-[24.4rem]" style={{backgroundColor: "#020D14"}} placeholder="Enter your email address"  required/>
+                        <input onChange={e => setEmail(e.target.value)} value={email} type="text" className="border-b bg-no-repeat bg-left message-icon pl-8 w-[24.4rem]" style={{backgroundColor: "#020D14"}} placeholder="Enter your email address" required/>
                     </div>
                     <div className="text-white text-500 text-[13px] mb-2 select-none">
                         Password
                     </div>
-                    <div className="text-white text-500 mb-4">
-                        <input type="text" className="border-b bg-no-repeat bg-left password-icon pl-8 w-[24.4rem]" style={{backgroundColor: "#020D14"}} placeholder="Enter your password"  required/>
+                    <div className="text-white text-500 mb-4 flex justify-between items-center w-[24.4rem] border-b">
+                        <input onChange={e => setPassword(e.target.value)} value={password} type={showInput ? "text" : "password"} className="border-none focus:border-none bg-no-repeat bg-left password-icon pl-8 w-[24.4rem]" style={{backgroundColor: "#020D14"}} placeholder="Enter your password" required/>
+                        {showInput ? <FiEyeOff className="reveal" onClick={() => setShowInput(!showInput)} /> : <FiEye className="reveal" onClick={() => setShowInput(!showInput)}/>}
                     </div>
                     <div className="text-white text-500 flex flex-row pb-12 gap-x-2">
                         <input type="checkbox"/>
@@ -47,11 +84,17 @@ const LoginPage = () => {
                             Forgot Password?
                         </div>
                     </div>
-                    <Link to="/main">
-                        <div className="h-14 px-5 py-4 bg-gradient-to-r from-emerald-500 to-sky-300 rounded-[32px] justify-center items-center gap-2 inline-flex w-[24.4rem]">
-                            <div className="text-white text-base text-600 leading-normal select-none">Login</div>
-                        </div>
-                    </Link>
+                    {loginValid ? <></> :
+                        <div className="text-red-800 text-500 mb-16">
+                            Wrong username or password
+                        </div>}
+                    {credentialsValid ? <></> :
+                        <div className="text-red-800 text-500 mb-16">
+                            Please enter your credentials
+                        </div>}
+                    <div onClick={Login} className="h-14 px-5 py-4 bg-gradient-to-r from-emerald-500 to-sky-300 rounded-[32px] justify-center items-center gap-2 inline-flex w-[24.4rem]">
+                        <div className="text-white text-base text-600 leading-normal select-none">Login</div>
+                    </div>
                 </div>
             </div>
         </div>
