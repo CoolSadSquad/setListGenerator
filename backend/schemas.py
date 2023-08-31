@@ -8,7 +8,10 @@ from pydantic.utils import GetterDict
 
 
 class SetlistBase(BaseModel):
-    name: str
+    venue: str
+    city: str
+    date: datetime
+    comment: str
     artist: str
     songs: List[str] = []
 

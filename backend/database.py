@@ -1,4 +1,7 @@
-import datetime
+from datetime import datetime, timedelta
+from typing import Union
+
+from jose import JWTError, jwt
 
 from credentials import MONGO_URI
 from pymongo import MongoClient
@@ -7,15 +10,31 @@ from dotenv import load_dotenv
 import os
 from bson import objectid
 
+load_dotenv()
+SECRET_KEY = os.getenv("SECRET_KEY")
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+
+def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None):
+    to_encode = {"sub": {"id": str(data["_id"]), "login": data["login"], "email": data["email"], "artists": data["artists"]}}
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
 
 class DB:
     def __init__(self):
-        load_dotenv()
         self.client = MongoClient(os.getenv("MONGO_URI"))
         self.database = self.client.setlistGenerator
         self.setlists = self.database["setlists"]
         self.users = self.database["users"]
         self.artists = self.database["artists"]
+
 
     # def add_user(self, email: str, login: str, password_hash: str, salt: str):
     #     return self.users.insert_one({
@@ -24,6 +43,9 @@ class DB:
     #         "password_hash": password_hash,
     #         "salt": salt
     #     }).inserted_id
+
+    def get_setlists_by_artist(self, artist: str):
+        return list(self.setlists.find({"artist": artist}))
 
     def update_user_token(self, phone):
         token = phone + str(time.time()) + phone * 2 + str(time.time())
@@ -84,6 +106,18 @@ class DB:
             return None
         return self.get_artist_by_id(_id)
 
+    def add_user_to_artist(self, artist_id: str, user_id: str):
+        user = self.get_user_by_id(user_id)
+        artist = self.get_artist_by_id(artist_id)
+        new_user = self.users.update_one(
+            {"_id": objectid.ObjectId(user_id)},
+            {"$push": {"artists": artist["name"]}}, upsert=False
+        )
+        new_artist = self.artists.update_one(
+            {"_id": objectid.ObjectId(artist_id)},
+            {"$push": {"users": user["login"]}}, upsert=False)
+        return self.get_artist_by_id(artist_id)
+
     # DONE: Setlist CRUD
 
     def get_all_setlists(self):
@@ -106,9 +140,12 @@ class DB:
             return None
         return self.get_setlist_by_id(_id)
 
-    def add_setlist(self, name: str, artist: str, songs: list):
+    def add_setlist(self, venue: str, city: str, date: datetime, comment: str, artist: str, songs: list):
         setlist_id = self.setlists.insert_one({
-            "name": name,
+            "venue": venue,
+            "city": city,
+            "date": date,
+            "comment": comment,
             "artist": artist,
             "songs": songs
         }).inserted_id
@@ -144,7 +181,7 @@ class DB:
         password = bytes(password, 'utf-8')
         password_hash = bcrypt.hashpw(password, salt)
         # print(password_hash, salt)
-        if len(self.get_user_by_login(login)) and len(self.get_user_by_email(email)):
+        if len(self.get_user_by_login(login)) or len(self.get_user_by_email(email)):
             return {"error": "User already exists"}
         user_id = self.users.insert_one({
             "login": login,
