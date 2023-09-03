@@ -86,3 +86,8 @@ code {
   background-size: contain;
   background-position: 4px;
 }
+.song-icon{
+  background-image: url("assets/images/song.svg");
+  background-size: auto;
+  background-position: 4px;
+}

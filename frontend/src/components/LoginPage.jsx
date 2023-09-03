@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import wallpaper from '../assets/images/wallpaper.jpg'
 import {Link, useNavigate} from "react-router-dom";
 import {Logo} from "./index";
@@ -7,6 +7,8 @@ import {useCookies} from "react-cookie";
 const LoginPage = () => {
     const BACKEND_URL = process.env.REACT_APP_BACKEND_URL
     const [password, setPassword] = useState('')
+    const [isValidEmail, setIsValidEmail] = useState(true);
+    const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}/g;
     const [email, setEmail] = useState('')
     const [credentialsValid, setCredentialsValid] = useState(true)
     const [loginValid, setLoginValid] = useState(true)
@@ -14,7 +16,7 @@ const LoginPage = () => {
     const [showInput, setShowInput] = useState(false)
     const [cookies, setCookie] = useCookies(['access_token'])
     const Login = () => {
-        if (password.length !== 0 && email.length !== 0){
+        if (password.length !== 0 && email.length !== 0 && isValidEmail){
             setCredentialsValid(true)
             fetch(BACKEND_URL + '/login/', {
                 method: 'POST',
@@ -25,13 +27,13 @@ const LoginPage = () => {
             })
                 .then(response => response.json())
                 .then(data => {
-                    if (data !== null){
+                    if (data.detail !== undefined){
+                        setLoginValid(false)
+                    }
+                    else {
                         setLoginValid(true)
                         setCookie('access_token', `${data.access_token}`, {path: '/'})
                         navigate("/main")
-                    }
-                    else {
-                        setLoginValid(false)
                     }
                 })
         }
@@ -39,6 +41,16 @@ const LoginPage = () => {
             setCredentialsValid(false)
         }
     }
+    const handleEmailChange = (e) => {
+        setEmail(e.target.value)
+        setIsValidEmail(emailRegex.test(e.target.value))
+    }
+
+    useEffect(() => {
+        if(cookies.access_token !== undefined){
+            navigate('/main')
+        }
+    }, []);
     return (
         <div>
             <div className="absolute logo-right pt-6">
@@ -66,7 +78,7 @@ const LoginPage = () => {
                         Email
                     </div>
                     <div className="text-white text-500 mb-12">
-                        <input onChange={e => setEmail(e.target.value)} value={email} type="text" className="border-b bg-no-repeat bg-left message-icon pl-8 w-[24.4rem]" style={{backgroundColor: "#020D14"}} placeholder="Enter your email address" required/>
+                        <input onChange={handleEmailChange} value={email} type="text" className="border-b bg-no-repeat bg-left message-icon pl-8 w-[24.4rem]" style={{backgroundColor: "#020D14"}} placeholder="Enter your email address" required/>
                     </div>
                     <div className="text-white text-500 text-[13px] mb-2 select-none">
                         Password

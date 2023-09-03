@@ -1,5 +1,5 @@
 import {BrowserRouter, Routes, Route, Navigate, Outlet} from "react-router-dom";
-import {ErrorPage, IndexPage, LoginPage, MainPage, RegisterPage} from "./components/index"
+import {AccountPage, ErrorPage, IndexPage, LoginPage, MainPage, RegisterPage} from "./components/index"
 import {useState} from "react";
 import {useCookies} from "react-cookie";
 
@@ -29,6 +29,7 @@ const App = () => {
             <Route path="*" element={<ErrorPage/>}/>
             <Route element={<ProtectedRoute/>}>
                 <Route path="/main" exact element={<MainPage/>}/>
+                <Route path="/account" exact element={<AccountPage/>}/>
             </Route>
         </Routes>
     </BrowserRouter>

@@ -8,6 +8,8 @@ const RegisterPage = () => {
     const [email, setEmail] = useState('')
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
+    const [isValidEmail, setIsValidEmail] = useState(true);
+    const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}/g;
     const [repeatedPassword, setRepeatedPassword] = useState('')
     const [passwordEqual, setPasswordEqual] = useState(true)
     const [credentialsValid, setCredentialsValid] = useState(true)
@@ -15,8 +17,12 @@ const RegisterPage = () => {
     const [showInput, setShowInput] = useState(false);
     const [showRepeatedInput, setShowRepeatedInput] = useState(false);
     const [userExists, setUserExists] = useState(false)
+    const handleEmailChange = (e) => {
+        setEmail(e.target.value)
+        setIsValidEmail(emailRegex.test(e.target.value))
+    }
     const Registration = () => {
-        if (username.length !== 0 && password.length !== 0 && email.length !== 0){
+        if (username.length !== 0 && password.length !== 0 && email.length !== 0 && isValidEmail){
             setCredentialsValid(true)
             if (password === repeatedPassword){
                 setPasswordEqual(true)
@@ -73,7 +79,7 @@ const RegisterPage = () => {
                         Email
                     </div>
                     <div className="text-white text-500 mb-12">
-                        <input onChange={e => setEmail(e.target.value)} value={email} type="text" className="border-b bg-no-repeat bg-left message-icon pl-8 w-[24.4rem]" style={{backgroundColor: "#020D14"}} placeholder="Enter your email address"  required/>
+                        <input onChange={handleEmailChange} value={email} type="text" className="border-b bg-no-repeat bg-left message-icon pl-8 w-[24.4rem]" style={{backgroundColor: "#020D14"}} placeholder="Enter your email address"  required/>
                     </div>
                     <div className="text-white text-500 select-none mb-2 text-[13px]">
                         Username
