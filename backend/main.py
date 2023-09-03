@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from fastapi import FastAPI, Depends, Request, HTTPException
+from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+
 from database import DB, create_access_token
 from typing import Union, List
 from pydantic import Json
@@ -9,6 +11,7 @@ import schemas
 from enum import Enum
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from typing import Annotated
+import setlist_processer as set_p
 
 
 app = FastAPI()
@@ -163,7 +166,17 @@ async def delete_user(user_id: str):
 
 # TODO: Common methods
 
-
 @app.get("/setlists/artist/{artist_name}", response_model=List[schemas.Setlist], tags=[Tags.common])
 async def get_setlists_by_artist(artist_name: str):
     return db.get_setlists_by_artist(artist_name)
+
+
+@app.get("/setlists/html/{setlist_id}", tags=[Tags.common])
+async def get_setlist_html(setlist_id: str):
+    return HTMLResponse(set_p.generate_html(setlist_id))
+
+
+@app.get("/setlists/pdf/{setlist_id}", tags=[Tags.common])
+def get_setlist_pdf(setlist_id: str):
+    path = set_p.generate_pdf(setlist_id)
+    return FileResponse(path=path, filename=f"{setlist_id}.pdf", media_type="application/pdf")

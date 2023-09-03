@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Setlist</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600&family=PT+Mono&display=swap" rel="stylesheet">
+
+</head>
+<body>
+    <h2>{{setlist.artist}}</h2>
+    <h4>{{setlist.venue}}, {{setlist.city}}, {{setlist.date}}, {{setlist.comment}}</h4>
+    {% for i in setlist.songs %}
+    <h3>{{loop.index}}. {{i}}</h3>
+    {% endfor %}
+</body>
+</html>
