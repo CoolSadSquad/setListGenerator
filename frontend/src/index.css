@@ -91,3 +91,13 @@ code {
   background-size: auto;
   background-position: 4px;
 }
+.city-icon{
+  background-image: url("assets/images/city.svg");
+  background-size: auto;
+  background-position: 4px;
+}
+.organization-icon{
+  background-image: url("assets/images/organization.svg");
+  background-size: auto;
+  background-position: 4px;
+}

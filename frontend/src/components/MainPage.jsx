@@ -1,14 +1,14 @@
 import React, {useEffect, useState} from 'react';
 import {NavBar, SetlistCard, SongCard} from "./index";
-import { isExpired, decodeToken } from "react-jwt";
+import { decodeToken } from "react-jwt";
 import {useCookies} from "react-cookie";
 import {FiPlusCircle, FiMinusCircle} from "react-icons/fi";
 import SongSerchCard from "./SongSerchCard";
 import moment from "moment";
-
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 const MainPage = () => {
     const BACKEND_URL = process.env.REACT_APP_BACKEND_URL
-    const [cookies, setCookie] = useCookies(['access_token'])
+    const [cookies] = useCookies(['access_token'])
     const token = cookies.access_token
     const [createNewArtist, setCreateNewArtist] = useState(false)
     const [username, setUsername] = useState(decodeToken(token).sub.login)
@@ -27,11 +27,6 @@ const MainPage = () => {
     const [currentArtistId, setCurrentArtistId] = useState('')
     const [addNewSong, setAddNewSong] = useState(false)
     const [addedNewSongName, setAddedNewSongName] = useState('')
-    const updateUserList = (user) =>{
-        const updatedUserList = [...userList]
-        updatedUserList.append(user)
-        setUserList(updatedUserList)
-    }
     const updateSongList = (index, song) => {
         const updatedSongList = [...songList]
         updatedSongList[index] = song
@@ -107,10 +102,12 @@ const MainPage = () => {
                 }
             })
             .then(() => {
-                setCurrentCity(currentSetlist.city)
-                setCurrentVenue(currentSetlist.venue)
-                setCurrentDate(moment(currentSetlist.date).utc().format('DD/MM/YYYY'))
-                setCurrentComment(currentSetlist.comment)
+                if (currentSetlist){
+                    setCurrentCity(currentSetlist.city)
+                    setCurrentVenue(currentSetlist.venue)
+                    setCurrentDate(moment(currentSetlist.date).utc().format('DD/MM/YYYY'))
+                    setCurrentComment(currentSetlist.comment)
+                }
             })
     }
     const saveSetlist = () => {
@@ -179,6 +176,13 @@ const MainPage = () => {
                 window.URL.revokeObjectURL(url);
             })
     }
+    const handleDrop = (droppedItem) => {
+        if (!droppedItem.destination) return;
+        let updateCurrentSetlist = [...currentSetlist.songs];
+        const [reorderedItem] = updateCurrentSetlist.splice(droppedItem.source.index, 1);
+        updateCurrentSetlist.splice(droppedItem.destination.index, 0, reorderedItem);
+        setCurrentSetlist({...currentSetlist, songs: updateCurrentSetlist});
+    };
     const createArtist = () => {
         if (artistName !== ''){
             fetch(BACKEND_URL + '/artists/',{
@@ -232,7 +236,7 @@ const MainPage = () => {
                                 </div>
                             ))}
                         </div>
-                        <div className="h-12 px-5 py-4 bg-gradient-to-r from-emerald-500 to-sky-300 rounded-[32px] justify-center items-center gap-2 inline-flex w-[12rem]">
+                        <div className="hover:from-emerald-600 hover:to-sky-400 h-12 px-5 py-4 bg-gradient-to-r from-emerald-500 to-sky-300 rounded-[32px] justify-center items-center gap-2 inline-flex w-[12rem]">
                             <div className="text-white text-base text-600 leading-normal select-none" onClick={createArtist}>Create Artist</div>
                         </div>
                     </div>
@@ -327,7 +331,7 @@ const MainPage = () => {
                             <div>
                                 Previous setlists
                             </div>
-                            <div onClick={createSetlist} className="self-center h-12 px-5 py-4 bg-gradient-to-r from-emerald-500 to-sky-300 rounded-[32px] justify-center items-center gap-2 inline-flex w-[12rem]">
+                            <div onClick={createSetlist} className="hover:from-emerald-600 hover:to-sky-400 self-center h-12 px-5 py-4 bg-gradient-to-r from-emerald-500 to-sky-300 rounded-[32px] justify-center items-center gap-2 inline-flex w-[12rem]">
                                 <div className="text-white text-base text-600 leading-normal select-none">Create new setlist</div>
                             </div>
                             {setlists.map((setlist, index) =>
@@ -340,10 +344,10 @@ const MainPage = () => {
                             Setlist
                         </div>
                         <div className="flex flex-row justify-evenly">
-                            <div onClick={saveSetlist} className="h-12 px-5 py-4 bg-gradient-to-r from-emerald-500 to-sky-300 rounded-[32px] justify-center items-center gap-2 inline-flex w-[12rem]">
+                            <div onClick={saveSetlist} className="hover:from-emerald-600 hover:to-sky-400 h-12 px-5 py-4 bg-gradient-to-r from-emerald-500 to-sky-300 rounded-[32px] justify-center items-center gap-2 inline-flex w-[12rem]">
                                 <div className="text-white text-base text-600 leading-normal select-none">Save</div>
                             </div>
-                        <div onClick={() => getSetlist(currentArtistName)} className="h-12 px-5 py-4 bg-gradient-to-r from-emerald-500 to-sky-300 rounded-[32px] justify-center items-center gap-2 inline-flex w-[12rem]">
+                        <div onClick={() => getSetlist(currentArtistName)} className="hover:from-emerald-600 hover:to-sky-400 h-12 px-5 py-4 bg-gradient-to-r from-emerald-500 to-sky-300 rounded-[32px] justify-center items-center gap-2 inline-flex w-[12rem]">
                             <div className="text-white text-base text-600 leading-normal select-none">Cancel</div>
                             </div>
                         </div>
@@ -379,24 +383,51 @@ const MainPage = () => {
                                 </div>
                             </>}
                         </div>
-                        <div className="flex flex-col gap-y-3">
-                            {currentSetlist.songs !== undefined ?
-                            currentSetlist.songs.map((song, index) =>(
-                                <SongCard songId={index+1} songName={song} handleDeleteSong={deleteSongFromSetlist}/>
-                            )) : <></>}
-                        </div>
+                        {/*{currentSetlist.songs !== undefined ?*/}
+                        {/*currentSetlist.songs.map((item, index) =>(*/}
+                        {/*    <Draggable key={item} draggableId={item} index={index}>*/}
+                        {/*        <SongCard songId={index+1} songName={item} handleDeleteSong={deleteSongFromSetlist}/>*/}
+                        {/*    </Draggable>*/}
+                        {/*)) : <></>}*/}
+                        <DragDropContext onDragEnd={handleDrop}>
+                            <Droppable className="flex flex-col gap-y-3">
+                                {(provided) => (
+                                    <div
+                                        className="list-container"
+                                        {...provided.droppableProps}
+                                        ref={provided.innerRef}
+                                    >
+                                        {currentSetlist.songs !== undefined ? currentSetlist.songs.map((item, index) => (
+                                            <Draggable key={item} draggableId={item} index={index}>
+                                                {(provided) => (
+                                                    <div
+                                                        className="item-container"
+                                                        ref={provided.innerRef}
+                                                        {...provided.dragHandleProps}
+                                                        {...provided.draggableProps}
+                                                    >
+                                                        <SongCard songId={index+1} songName={item} handleDeleteSong={deleteSongFromSetlist}/>
+                                                    </div>
+                                                )}
+                                            </Draggable>
+                                        )) : <></>}
+                                        {provided.placeholder}
+                                    </div>
+                                )}
+                            </Droppable>
+                        </DragDropContext>
                     </div>
                     <div className="flex flex-col gap-y-5">
                         <div>
                             Songs
                         </div>
-                        <div onClick={() => setAddNewSong(!addNewSong)} className="self-center h-12 px-5 py-4 bg-gradient-to-r from-emerald-500 to-sky-300 rounded-[32px] justify-center items-center gap-2 inline-flex w-[12rem]">
+                        <div onClick={() => setAddNewSong(!addNewSong)} className="hover:from-emerald-600 hover:to-sky-400 self-center h-12 px-5 py-4 bg-gradient-to-r from-emerald-500 to-sky-300 rounded-[32px] justify-center items-center gap-2 inline-flex w-[12rem]">
                             <div className="text-white text-base text-600 leading-normal select-none">Add new song</div>
                         </div>
                         {addNewSong ?
                             <>
                                 <input onChange={e => setAddedNewSongName(e.target.value)} type="text" className="border-b bg-no-repeat bg-left song-icon pl-8 w-[31.5rem]" style={{backgroundColor: "#020D14"}} value={addedNewSongName} placeholder="Enter song name" required/>
-                                <div onClick={addSong} className="self-center h-12 px-5 py-4 bg-gradient-to-r from-emerald-500 to-sky-300 rounded-[32px] justify-center items-center gap-2 inline-flex w-[12rem]">
+                                <div onClick={addSong} className="hover:from-emerald-600 hover:to-sky-400 self-center h-12 px-5 py-4 bg-gradient-to-r from-emerald-500 to-sky-300 rounded-[32px] justify-center items-center gap-2 inline-flex w-[12rem]">
                                     <div className="text-white text-base text-600 leading-normal select-none">Submit</div>
                                 </div>
                             </>

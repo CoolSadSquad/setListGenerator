@@ -1,5 +1,6 @@
 import React from 'react';
-import bin from "../assets/images/bin.svg";
+import {RiDraggable} from "react-icons/ri";
+import {FiTrash2} from "react-icons/fi";
 
 const SongCard = ({songId, songName, handleDeleteSong}) => {
     return (
@@ -13,7 +14,8 @@ const SongCard = ({songId, songName, handleDeleteSong}) => {
                 </div>
             </div>
             <div className='flex flex-row gap-x-3'>
-                <img src={bin} width="16px" height="16px" alt="" onClick={() => handleDeleteSong(songId)}/>
+                <RiDraggable/>
+                <FiTrash2 color="red" onClick={() => handleDeleteSong(songId)}/>
             </div>
         </div>
     );

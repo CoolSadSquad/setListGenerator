@@ -17,7 +17,7 @@ const ErrorPage = () => {
                     Error 404. There is nothing here
                 </div>
                 <Link to="/">
-                    <div className="w-[264px] h-14 px-5 py-4 bg-gradient-to-r from-emerald-500 to-sky-300 rounded-[32px] justify-center items-center gap-2 inline-flex">
+                    <div className="hover:from-emerald-600 hover:to-sky-400 w-[264px] h-14 px-5 py-4 bg-gradient-to-r from-emerald-500 to-sky-300 rounded-[32px] justify-center items-center gap-2 inline-flex">
                         <div className="text-white text-base font-semibold leading-normal select-none">Go Back</div>
                     </div>
                 </Link>

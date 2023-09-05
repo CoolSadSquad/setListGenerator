@@ -113,7 +113,7 @@ const RegisterPage = () => {
                         User already exists
                     </div> :
                        <></> }
-                    <div onClick={Registration} className="h-14 px-5 py-4 bg-gradient-to-r from-emerald-500 to-sky-300 rounded-[32px] justify-center items-center gap-2 inline-flex w-[24.4rem]">
+                    <div onClick={Registration} className="hover:from-emerald-600 hover:to-sky-400 h-14 px-5 py-4 bg-gradient-to-r from-emerald-500 to-sky-300 rounded-[32px] justify-center items-center gap-2 inline-flex w-[24.4rem]">
                         <div className="text-white text-base text-600 leading-normal select-none">Register</div>
                     </div>
                 </div>

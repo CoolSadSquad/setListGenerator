@@ -16,10 +16,10 @@ const IndexPage = () => {
                     Build your Setlists in minutes
                 </div>
                 <div className="w-[580px] text-neutral-500 text-lg text-500 leading-7 text-center select-none mt-[40px] mb-[80px]">
-                    The night is dark and full of terrors. What is dead may never die. And now his watch is ended. All men must die.
+                    PunchClub is a user-friendly web app designed for musicians, bands, and performers of all levels to effortlessly craft and organize their perfect music setlists.
                 </div>
                 <Link to="/login">
-                    <div className="w-[264px] h-14 px-5 py-4 bg-gradient-to-r from-emerald-500 to-sky-300 rounded-[32px] justify-center items-center gap-2 inline-flex">
+                    <div className="hover:from-emerald-600 hover:to-sky-400 w-[264px] h-14 px-5 py-4 bg-gradient-to-r from-emerald-500 to-sky-300 rounded-[32px] justify-center items-center gap-2 inline-flex">
                         <div className="text-white text-base font-semibold leading-normal select-none">Login</div>
                     </div>
                 </Link>
