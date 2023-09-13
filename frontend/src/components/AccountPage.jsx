@@ -3,14 +3,13 @@ import {NavBar} from "./index";
 import {useCookies} from "react-cookie";
 import {decodeToken} from "react-jwt";
 import {FiEye, FiEyeOff} from "react-icons/fi";
-
 const AccountPage = () => {
     const BACKEND_URL = process.env.REACT_APP_BACKEND_URL
-    const [cookies, setCookie, removeCookie] = useCookies(['access_token'])
+    const [cookies, removeCookie] = useCookies(['access_token'])
     const token = cookies.access_token
-    const [username, setUsername] = useState(decodeToken(token).sub.login)
+    const [username] = useState(decodeToken(token).sub.login)
     const [currentArtistName, setCurrentArtistName] = useState('')
-    const [artistList, setArtistList] = useState([])
+    const [setArtistList] = useState([])
     const [email, setEmail] = useState('')
     const [isValidEmail, setIsValidEmail] = useState(true)
     const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}/g;
@@ -25,11 +24,35 @@ const AccountPage = () => {
     const [organization, setOrganization] = useState('')
     const [isValidCredentials, setIsValidCredentials] = useState(true)
     const [currentUserId, setCurrentUserId] = useState(decodeToken(token).sub.id)
+    const [isPasswordEqual, setIsPasswordEqual] = useState(true);
+    const [currentArtistId, setCurrentArtistId] = useState('')
     const handleEmailChange = (e) => {
         setEmail(e.target.value)
         setIsValidEmail(emailRegex.test(e.target.value))
     }
-
+    const changePassword = () => {
+        if(newPassword === repeatedPassword && oldPassword.length !== 0 && newPassword.length !== 0 && repeatedPassword.length !== 0){
+            fetch(BACKEND_URL + '/users/update_password',{
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({email: email, password: oldPassword, new_password: newPassword})
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.detail !== undefined) {
+                        setIsPasswordEqual(false)
+                    }
+                    else{
+                        removeCookie('access_token')
+                    }
+                })
+        }
+        else {
+            setIsPasswordEqual(false)
+        }
+    }
     const changeCredentials = () => {
         if(isValidEmail && currentArtistName.length !== 0 && email.length !== 0){
             setIsValidCredentials(true)
@@ -47,13 +70,15 @@ const AccountPage = () => {
     }
     const addNewMember = () => {
         if(newMember.length !== 0){
-            fetch(BACKEND_URL + '/users/', {
+            fetch(BACKEND_URL + '/artists/user/', {
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({id: currentUserId, newjson: {email: email, }})
+                body: JSON.stringify({id: currentArtistId, login: newMember})
             })
+                .then(response => response.json())
+                .then(() => setNewMember(''))
         }
     }
     const deleteAccount = () => {
@@ -74,6 +99,9 @@ const AccountPage = () => {
                 setArtistList(data.artists)
                 setCurrentUserId(data.id)
                 setCurrentArtistName(data.artists[0])
+                fetch(BACKEND_URL + `/artists/name/${data.artists[0]}`)
+                    .then(response => response.json())
+                    .then(data => setCurrentArtistId(data.id))
             })
     }, []);
     return (
@@ -156,10 +184,16 @@ const AccountPage = () => {
                                 <input onChange={e => setRepeatedPassword(e.target.value)} value={repeatedPassword} type={repeatedInput ? "text" : "password"} className="border-none focus:border-none bg-no-repeat bg-left password-icon pl-8 w-[24.4rem]" style={{backgroundColor: "#020D14"}} placeholder="Confirm your password" required/>
                                 {repeatedInput ? <FiEyeOff className="reveal" onClick={() => setRepeatedInput(!repeatedInput)} /> : <FiEye className="reveal" onClick={() => setRepeatedInput(!repeatedInput)}/>}
                             </div>
+
                         </div>
-                    <div className="hover:from-emerald-600 hover:to-sky-400 h-12 px-5 py-4 bg-gradient-to-r from-emerald-500 to-sky-300 rounded-[32px] justify-center items-center gap-2 inline-flex w-[12rem]">
+                    <div onClick={changePassword} className="hover:from-emerald-600 hover:to-sky-400 h-12 px-5 py-4 bg-gradient-to-r from-emerald-500 to-sky-300 rounded-[32px] justify-center items-center gap-2 inline-flex w-[12rem]">
                         <div className="text-white text-base text-600 leading-normal select-none">Update password</div>
                     </div>
+                    {isPasswordEqual ? <></> :
+                        <div className="text-red-800 text-500">
+                            Incorrect username or password
+                        </div>
+                    }
                     <div className="text-3xl">
                         Delete your account
                     </div>

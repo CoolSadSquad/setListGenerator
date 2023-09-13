@@ -1,6 +1,5 @@
 import React from 'react';
-import bin from "../assets/images/bin.svg";
-import {FiMinusCircle, FiPlusCircle, FiTrash2} from "react-icons/fi";
+import { FiPlusCircle, FiTrash2 } from "react-icons/fi";
 
 const SongSerchCard = ({songId, songName, handleAddSong, handleDeleteSong}) => {
     return (

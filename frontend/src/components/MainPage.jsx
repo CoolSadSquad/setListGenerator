@@ -93,23 +93,22 @@ const MainPage = () => {
                 setSetlists(data)}})
     }
     const getSetlist = (artistName) => {
-        fetch(BACKEND_URL + `/setlists/artist/${artistName}`)
-            .then(response => response.json())
-            .then(data => {if(data.length !== 0){
-                setCurrentArtistName(artistList[0])
-                setSetlists(data)
-                setCurrentSetlist(data[0])
-                }
-            })
-            .then(() => {
-                if (currentSetlist){
-                    setCurrentCity(currentSetlist.city)
-                    setCurrentVenue(currentSetlist.venue)
-                    setCurrentDate(moment(currentSetlist.date).utc().format('DD/MM/YYYY'))
-                    setCurrentComment(currentSetlist.comment)
-                }
-            })
-    }
+            fetch(BACKEND_URL + `/setlists/artist/${artistName}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length !== 0) {
+                        setCurrentArtistName(artistList[0]);
+                        setSetlists(data);
+                        setCurrentSetlist(data[0])
+                    }
+                })
+    };
+    useEffect(() => {
+        setCurrentVenue(currentSetlist.venue)
+        setCurrentCity(currentSetlist.city)
+        setCurrentDate(moment(currentSetlist.date).utc().format('DD/MM/YYYY'))
+        setCurrentComment(currentSetlist.comment)
+    }, [currentSetlist]);
     const saveSetlist = () => {
         fetch(BACKEND_URL + `/setlists/`, {
             method: 'PUT',
@@ -176,12 +175,18 @@ const MainPage = () => {
                 window.URL.revokeObjectURL(url);
             })
     }
-    const handleDrop = (droppedItem) => {
-        if (!droppedItem.destination) return;
-        let updateCurrentSetlist = [...currentSetlist.songs];
-        const [reorderedItem] = updateCurrentSetlist.splice(droppedItem.source.index, 1);
-        updateCurrentSetlist.splice(droppedItem.destination.index, 0, reorderedItem);
-        setCurrentSetlist({...currentSetlist, songs: updateCurrentSetlist});
+    const onDragEnd = (result) => {
+        if (!result.destination) {
+            return;
+        }
+        const startIndex = result.source.index;
+        const endIndex = result.destination.index;
+
+        const updatedSongs = Array.from(currentSetlist.songs);
+        const [movedItem] = updatedSongs.splice(startIndex, 1);
+        updatedSongs.splice(endIndex, 0, movedItem);
+
+        setCurrentSetlist({ ...currentSetlist, songs: updatedSongs });
     };
     const createArtist = () => {
         if (artistName !== ''){
@@ -203,13 +208,13 @@ const MainPage = () => {
         }
     }
     useEffect(() => {
-        if (artistList.length === 0){
-            setCreateNewArtist(true)
-        }else{
-            setCreateNewArtist(false)
-            getSongs(artistList[0])
-            getSetlist(artistList[0])
-        }
+            if (artistList.length === 0) {
+                setCreateNewArtist(true);
+            } else {
+                setCreateNewArtist(false);
+                getSongs(artistList[0]);
+                getSetlist(artistList[0]);
+            }
     }, [artistList]);
     return (
         <div className="text-white text-500">
@@ -383,39 +388,34 @@ const MainPage = () => {
                                 </div>
                             </>}
                         </div>
-                        {/*{currentSetlist.songs !== undefined ?*/}
-                        {/*currentSetlist.songs.map((item, index) =>(*/}
-                        {/*    <Draggable key={item} draggableId={item} index={index}>*/}
-                        {/*        <SongCard songId={index+1} songName={item} handleDeleteSong={deleteSongFromSetlist}/>*/}
-                        {/*    </Draggable>*/}
-                        {/*)) : <></>}*/}
-                        <DragDropContext onDragEnd={handleDrop}>
-                            <Droppable className="flex flex-col gap-y-3">
-                                {(provided) => (
-                                    <div
-                                        className="list-container"
-                                        {...provided.droppableProps}
-                                        ref={provided.innerRef}
-                                    >
-                                        {currentSetlist.songs !== undefined ? currentSetlist.songs.map((item, index) => (
-                                            <Draggable key={item} draggableId={item} index={index}>
-                                                {(provided) => (
-                                                    <div
-                                                        className="item-container"
-                                                        ref={provided.innerRef}
-                                                        {...provided.dragHandleProps}
-                                                        {...provided.draggableProps}
-                                                    >
-                                                        <SongCard songId={index+1} songName={item} handleDeleteSong={deleteSongFromSetlist}/>
-                                                    </div>
-                                                )}
-                                            </Draggable>
-                                        )) : <></>}
-                                        {provided.placeholder}
-                                    </div>
-                                )}
-                            </Droppable>
-                        </DragDropContext>
+                        <div>
+                            <DragDropContext onDragEnd={onDragEnd}>
+                                <Droppable droppableId="songs">
+                                    {(provided) => (
+                                        <div {...provided.droppableProps} ref={provided.innerRef}>
+                                            {currentSetlist.songs !== undefined ? (
+                                                currentSetlist.songs.map((song, index) => (
+                                                    <Draggable key={index} draggableId={`song-${index}`} index={index}>
+                                                        {(provided) => (
+                                                            <div
+                                                                ref={provided.innerRef}
+                                                                {...provided.draggableProps}
+                                                                {...provided.dragHandleProps}
+                                                            >
+                                                                <SongCard songId={index + 1} songName={song} handleDeleteSong={deleteSongFromSetlist} />
+                                                            </div>
+                                                        )}
+                                                    </Draggable>
+                                                ))
+                                            ) : (
+                                                <></>
+                                            )}
+                                            {provided.placeholder}
+                                        </div>
+                                    )}
+                                </Droppable>
+                            </DragDropContext>
+                        </div>
                     </div>
                     <div className="flex flex-col gap-y-5">
                         <div>

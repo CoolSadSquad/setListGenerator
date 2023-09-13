@@ -5,7 +5,7 @@ import bin from "../assets/images/bin.svg"
 import edit from "../assets/images/edit.svg"
 const SetlistCard = ({venue, city, date, comment, setlistId, handleDeleteSetlist, handleEditSetlist, handleDownloadSetlist}) => {
     return (
-        <div key={setlistId} className="border-sky-300 border-2 rounded-md text-white text-500 select-none">
+        <div key={setlistId} className="border-sky-300 border-2 rounded-md text-white text-500 select-none max-w-[250px]">
             <div className="flex flex-row justify-between p-2 gap-x-5">
                 <div className="flex flex-col">
                     <div className="flex flex-row gap-x-2">

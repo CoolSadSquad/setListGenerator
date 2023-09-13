@@ -1,6 +1,5 @@
 import {BrowserRouter, Routes, Route, Navigate, Outlet} from "react-router-dom";
 import {AccountPage, ErrorPage, IndexPage, LoginPage, MainPage, RegisterPage} from "./components/index"
-import {useState} from "react";
 import {useCookies} from "react-cookie";
 
 
