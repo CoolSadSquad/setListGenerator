@@ -5,11 +5,11 @@ import {decodeToken} from "react-jwt";
 import {FiEye, FiEyeOff} from "react-icons/fi";
 const AccountPage = () => {
     const BACKEND_URL = process.env.REACT_APP_BACKEND_URL
-    const [cookies, removeCookie] = useCookies(['access_token'])
+    const [cookies, setCookie, removeCookie] = useCookies(['access_token'])
     const token = cookies.access_token
-    const [username] = useState(decodeToken(token).sub.login)
+    const [username, setUsername] = useState(decodeToken(token).sub.login)
     const [currentArtistName, setCurrentArtistName] = useState('')
-    const [setArtistList] = useState([])
+    const [artistList, setArtistList] = useState([])
     const [email, setEmail] = useState('')
     const [isValidEmail, setIsValidEmail] = useState(true)
     const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}/g;
@@ -20,19 +20,20 @@ const AccountPage = () => {
     const [newInput, setNewInput] = useState(false)
     const [repeatedInput, setRepeatedInput] = useState(false)
     const [newMember, setNewMember] = useState('')
-    const [country, setCountry] = useState('')
-    const [organization, setOrganization] = useState('')
+    // const [country, setCountry] = useState('')
+    // const [organization, setOrganization] = useState('')
     const [isValidCredentials, setIsValidCredentials] = useState(true)
     const [currentUserId, setCurrentUserId] = useState(decodeToken(token).sub.id)
     const [isPasswordEqual, setIsPasswordEqual] = useState(true);
     const [currentArtistId, setCurrentArtistId] = useState('')
+    const [newArtist, setNewArtist] = useState('');
     const handleEmailChange = (e) => {
         setEmail(e.target.value)
         setIsValidEmail(emailRegex.test(e.target.value))
     }
     const changePassword = () => {
-        if(newPassword === repeatedPassword && oldPassword.length !== 0 && newPassword.length !== 0 && repeatedPassword.length !== 0){
-            fetch(BACKEND_URL + '/users/update_password',{
+        if (newPassword === repeatedPassword && oldPassword.length !== 0 && newPassword.length !== 0 && repeatedPassword.length !== 0) {
+            fetch(BACKEND_URL + '/users/update_password', {
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json',
@@ -43,33 +44,35 @@ const AccountPage = () => {
                 .then(data => {
                     if (data.detail !== undefined) {
                         setIsPasswordEqual(false)
-                    }
-                    else{
+                    } else {
                         removeCookie('access_token')
                     }
                 })
-        }
-        else {
+        } else {
             setIsPasswordEqual(false)
         }
     }
     const changeCredentials = () => {
-        if(isValidEmail && currentArtistName.length !== 0 && email.length !== 0){
+        if (isValidEmail && currentArtistName.length !== 0 && email.length !== 0) {
             setIsValidCredentials(true)
-            fetch(BACKEND_URL + '/users/',{
+            fetch(BACKEND_URL + '/users/', {
                 method: "PUT",
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({id: currentUserId, newjson: {email: email, }})
+                body: JSON.stringify({id: currentUserId, newjson: {email: email, login: username}})
             })
-        }
-        else{
+                .then(response => response.json())
+                .then(data => {
+                    setUsername(data.login)
+                    setEmail(data.email)
+                })
+        } else {
             setIsValidCredentials(false)
         }
     }
     const addNewMember = () => {
-        if(newMember.length !== 0){
+        if (newMember.length !== 0) {
             fetch(BACKEND_URL + '/artists/user/', {
                 method: "POST",
                 headers: {
@@ -81,8 +84,25 @@ const AccountPage = () => {
                 .then(() => setNewMember(''))
         }
     }
+    const createNewArtist = () => {
+        if (newArtist.length !== 0){
+            fetch(BACKEND_URL + '/artists/', {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({name: newArtist, songs: [], users: [username]})
+            })
+                .then(response => response.json())
+                .then(data => {
+                    setCurrentArtistName(data.name)
+                    setCurrentArtistId(data.id)
+                    setNewArtist('')
+                })
+        }
+    }
     const deleteAccount = () => {
-        fetch(BACKEND_URL + `/users/${currentUserId}`,{
+        fetch(BACKEND_URL + `/users/${currentUserId}`, {
             method: "DELETE",
             headers: {
                 'Content-Type': 'application/json',
@@ -104,6 +124,7 @@ const AccountPage = () => {
                     .then(data => setCurrentArtistId(data.id))
             })
     }, []);
+
     return (
         <div className="text-white text-500">
             <NavBar/>
@@ -117,28 +138,35 @@ const AccountPage = () => {
                             Artist
                         </div>
                         <div className="border-b border-solid">
-                            <input onChange={e => setCurrentArtistName(e.target.value)} type="text" className="border-none focus:border-none bg-no-repeat bg-left username-icon pl-8 w-[24.4rem]" style={{backgroundColor: "#020D14"}} placeholder="Enter your artist name" value={currentArtistName} required/>
+                            <input onChange={e => setCurrentArtistName(e.target.value)} type="text"
+                                   className="border-none focus:border-none bg-no-repeat bg-left username-icon pl-8 w-[24.4rem]"
+                                   style={{backgroundColor: "#020D14"}} placeholder="Enter your artist name"
+                                   value={currentArtistName} required/>
                         </div>
                         <div className="text-xl">
                             Email
                         </div>
                         <div className="border-b border-solid">
-                            <input onChange={handleEmailChange} type="text" className="border-none focus:border-none bg-no-repeat bg-left message-icon pl-8 w-[24.4rem]" style={{backgroundColor: "#020D14"}} value={email} placeholder="Enter your email" required/>
+                            <input onChange={handleEmailChange} type="text"
+                                   className="border-none focus:border-none bg-no-repeat bg-left message-icon pl-8 w-[24.4rem]"
+                                   style={{backgroundColor: "#020D14"}} value={email} placeholder="Enter your email"
+                                   required/>
                         </div>
-                        <div className="text-xl">
-                            Country
-                        </div>
-                        <div className="border-b border-solid">
-                            <input onChange={e => setCountry(e.target.value)} type="text" className="border-none focus:border-none bg-no-repeat bg-left city-icon pl-8 w-[24.4rem]" style={{backgroundColor: "#020D14"}} value={country} placeholder="Enter your country" required/>
-                        </div>
-                        <div className="text-xl">
-                            Organization
-                        </div>
-                        <div className="border-b border-solid">
-                            <input onChange={e => setOrganization(e.target.value)} type="text" className="border-none focus:border-none bg-no-repeat bg-left organization-icon pl-8 w-[24.4rem]" style={{backgroundColor: "#020D14"}} value={organization} placeholder="Enter your organization" required/>
-                        </div>
+                        {/*<div className="text-xl">*/}
+                        {/*    Country*/}
+                        {/*</div>*/}
+                        {/*<div className="border-b border-solid">*/}
+                        {/*    <input onChange={e => setCountry(e.target.value)} type="text" className="border-none focus:border-none bg-no-repeat bg-left city-icon pl-8 w-[24.4rem]" style={{backgroundColor: "#020D14"}} value={country} placeholder="Enter your country" required/>*/}
+                        {/*</div>*/}
+                        {/*<div className="text-xl">*/}
+                        {/*    Organization*/}
+                        {/*</div>*/}
+                        {/*<div className="border-b border-solid">*/}
+                        {/*    <input onChange={e => setOrganization(e.target.value)} type="text" className="border-none focus:border-none bg-no-repeat bg-left organization-icon pl-8 w-[24.4rem]" style={{backgroundColor: "#020D14"}} value={organization} placeholder="Enter your organization" required/>*/}
+                        {/*</div>*/}
                     </div>
-                    <div onClick={changeCredentials} className="hover:from-emerald-600 hover:to-sky-400 h-12 px-5 py-4 bg-gradient-to-r from-emerald-500 to-sky-300 rounded-[32px] justify-center items-center gap-2 inline-flex w-[12rem]">
+                    <div onClick={changeCredentials}
+                         className="hover:from-emerald-600 hover:to-sky-400 h-12 px-5 py-4 bg-gradient-to-r from-emerald-500 to-sky-300 rounded-[32px] justify-center items-center gap-2 inline-flex w-[12rem]">
                         <div className="text-white text-base text-600 leading-normal select-none">Save changes</div>
                     </div>
                     {isValidCredentials ? <></> :
@@ -148,13 +176,32 @@ const AccountPage = () => {
                     }
                     <div className="flex flex-col gap-y-2">
                         <div className="text-xl">
+                            Create new artist
+                        </div>
+                        <div className="border-b border-solid">
+                            <input onChange={e => setNewArtist(e.target.value)} type="text"
+                                   className="border-none focus:border-none bg-no-repeat bg-left song-icon pl-8 w-[24.4rem]"
+                                   style={{backgroundColor: "#020D14"}} value={newArtist}
+                                   placeholder="Enter artist to create" required/>
+                        </div>
+                    </div>
+                    <div onClick={createNewArtist}
+                         className="hover:from-emerald-600 hover:to-sky-400 h-12 px-5 py-4 bg-gradient-to-r from-emerald-500 to-sky-300 rounded-[32px] justify-center items-center gap-2 inline-flex w-[12rem]">
+                        <div className="text-white text-base text-600 leading-normal select-none">Create new artist</div>
+                    </div>
+                    <div className="flex flex-col gap-y-2">
+                        <div className="text-xl">
                             Add new member
                         </div>
                         <div className="border-b border-solid">
-                            <input onChange={e => setNewMember(e.target.value)} type="text" className="border-none focus:border-none bg-no-repeat bg-left username-icon pl-8 w-[24.4rem]" style={{backgroundColor: "#020D14"}} value={newMember} placeholder="Enter member to add" required/>
+                            <input onChange={e => setNewMember(e.target.value)} type="text"
+                                   className="border-none focus:border-none bg-no-repeat bg-left username-icon pl-8 w-[24.4rem]"
+                                   style={{backgroundColor: "#020D14"}} value={newMember}
+                                   placeholder="Enter member to add" required/>
                         </div>
                     </div>
-                    <div onClick={addNewMember} className="hover:from-emerald-600 hover:to-sky-400 h-12 px-5 py-4 bg-gradient-to-r from-emerald-500 to-sky-300 rounded-[32px] justify-center items-center gap-2 inline-flex w-[12rem]">
+                    <div onClick={addNewMember}
+                         className="hover:from-emerald-600 hover:to-sky-400 h-12 px-5 py-4 bg-gradient-to-r from-emerald-500 to-sky-300 rounded-[32px] justify-center items-center gap-2 inline-flex w-[12rem]">
                         <div className="text-white text-base text-600 leading-normal select-none">Add member</div>
                     </div>
                 </div>
@@ -162,31 +209,48 @@ const AccountPage = () => {
                     <div className="text-3xl">
                         Change password
                     </div>
-                        <div className="flex flex-col gap-y-3">
-                            <div className="text-xl">
-                                Old password
-                            </div>
-                            <div className="text-white text-500 mb-4 flex justify-between items-center w-[24.4rem] border-b">
-                            <input onChange={e => setOldPassword(e.target.value)} value={oldPassword} type={oldInput ? "text" : "password"} className="border-none focus:border-none bg-no-repeat bg-left password-icon pl-8 w-[24.4rem]" style={{backgroundColor: "#020D14"}} placeholder="Enter your old password" required/>
-                                {oldInput ? <FiEyeOff className="reveal" onClick={() => setOldInput(!oldInput)} /> : <FiEye className="reveal" onClick={() => setOldInput(!oldInput)}/>}
-                            </div>
-                            <div className="text-xl">
-                                New password
-                            </div>
-                            <div className="text-white text-500 mb-4 flex justify-between items-center w-[24.4rem] border-b">
-                                <input onChange={e => setNewPassword(e.target.value)} value={newPassword} type={newInput ? "text" : "password"} className="border-none focus:border-none bg-no-repeat bg-left password-icon pl-8 w-[24.4rem]" style={{backgroundColor: "#020D14"}} placeholder="Enter your new password" required/>
-                                {newInput ? <FiEyeOff className="reveal" onClick={() => setNewInput(!newInput)} /> : <FiEye className="reveal" onClick={() => setNewInput(!newInput)}/>}
-                            </div>
-                            <div className="text-xl">
-                                Confirm password
-                            </div>
-                            <div className="text-white text-500 mb-4 flex justify-between items-center w-[24.4rem] border-b">
-                                <input onChange={e => setRepeatedPassword(e.target.value)} value={repeatedPassword} type={repeatedInput ? "text" : "password"} className="border-none focus:border-none bg-no-repeat bg-left password-icon pl-8 w-[24.4rem]" style={{backgroundColor: "#020D14"}} placeholder="Confirm your password" required/>
-                                {repeatedInput ? <FiEyeOff className="reveal" onClick={() => setRepeatedInput(!repeatedInput)} /> : <FiEye className="reveal" onClick={() => setRepeatedInput(!repeatedInput)}/>}
-                            </div>
-
+                    <div className="flex flex-col gap-y-3">
+                        <div className="text-xl">
+                            Old password
                         </div>
-                    <div onClick={changePassword} className="hover:from-emerald-600 hover:to-sky-400 h-12 px-5 py-4 bg-gradient-to-r from-emerald-500 to-sky-300 rounded-[32px] justify-center items-center gap-2 inline-flex w-[12rem]">
+                        <div
+                            className="text-white text-500 mb-4 flex justify-between items-center w-[24.4rem] border-b">
+                            <input onChange={e => setOldPassword(e.target.value)} value={oldPassword}
+                                   type={oldInput ? "text" : "password"}
+                                   className="border-none focus:border-none bg-no-repeat bg-left password-icon pl-8 w-[24.4rem]"
+                                   style={{backgroundColor: "#020D14"}} placeholder="Enter your old password" required/>
+                            {oldInput ? <FiEyeOff className="reveal" onClick={() => setOldInput(!oldInput)}/> :
+                                <FiEye className="reveal" onClick={() => setOldInput(!oldInput)}/>}
+                        </div>
+                        <div className="text-xl">
+                            New password
+                        </div>
+                        <div
+                            className="text-white text-500 mb-4 flex justify-between items-center w-[24.4rem] border-b">
+                            <input onChange={e => setNewPassword(e.target.value)} value={newPassword}
+                                   type={newInput ? "text" : "password"}
+                                   className="border-none focus:border-none bg-no-repeat bg-left password-icon pl-8 w-[24.4rem]"
+                                   style={{backgroundColor: "#020D14"}} placeholder="Enter your new password" required/>
+                            {newInput ? <FiEyeOff className="reveal" onClick={() => setNewInput(!newInput)}/> :
+                                <FiEye className="reveal" onClick={() => setNewInput(!newInput)}/>}
+                        </div>
+                        <div className="text-xl">
+                            Confirm password
+                        </div>
+                        <div
+                            className="text-white text-500 mb-4 flex justify-between items-center w-[24.4rem] border-b">
+                            <input onChange={e => setRepeatedPassword(e.target.value)} value={repeatedPassword}
+                                   type={repeatedInput ? "text" : "password"}
+                                   className="border-none focus:border-none bg-no-repeat bg-left password-icon pl-8 w-[24.4rem]"
+                                   style={{backgroundColor: "#020D14"}} placeholder="Confirm your password" required/>
+                            {repeatedInput ?
+                                <FiEyeOff className="reveal" onClick={() => setRepeatedInput(!repeatedInput)}/> :
+                                <FiEye className="reveal" onClick={() => setRepeatedInput(!repeatedInput)}/>}
+                        </div>
+
+                    </div>
+                    <div onClick={changePassword}
+                         className="hover:from-emerald-600 hover:to-sky-400 h-12 px-5 py-4 bg-gradient-to-r from-emerald-500 to-sky-300 rounded-[32px] justify-center items-center gap-2 inline-flex w-[12rem]">
                         <div className="text-white text-base text-600 leading-normal select-none">Update password</div>
                     </div>
                     {isPasswordEqual ? <></> :
@@ -197,7 +261,8 @@ const AccountPage = () => {
                     <div className="text-3xl">
                         Delete your account
                     </div>
-                    <div onClick={deleteAccount} className="hover:from-emerald-600 hover:to-sky-400 h-12 px-5 py-4 bg-gradient-to-r from-emerald-500 to-sky-300 rounded-[32px] justify-center items-center gap-2 inline-flex w-[12rem]">
+                    <div onClick={deleteAccount}
+                         className="hover:from-emerald-600 hover:to-sky-400 h-12 px-5 py-4 bg-gradient-to-r from-emerald-500 to-sky-300 rounded-[32px] justify-center items-center gap-2 inline-flex w-[12rem]">
                         <div className="text-white text-base text-600 leading-normal select-none">Delete account</div>
                     </div>
                 </div>
