@@ -3,6 +3,7 @@ import {NavBar} from "./index";
 import {useCookies} from "react-cookie";
 import {decodeToken} from "react-jwt";
 import {FiEye, FiEyeOff} from "react-icons/fi";
+import {FormControl, InputLabel, MenuItem, Select} from "@mui/material";
 const AccountPage = () => {
     const BACKEND_URL = process.env.REACT_APP_BACKEND_URL
     const [cookies, setCookie, removeCookie] = useCookies(['access_token'])
@@ -133,9 +134,34 @@ const AccountPage = () => {
                     <div className="text-3xl">
                         Information
                     </div>
-                    <div className="flex flex-col gap-y-3">
+                    <div className="flex flex-col gap-y-4">
+                        <FormControl variant="standard" className="text-500" sx={{ borderBottom: "2px solid #FFFFFF", borderColor: "#FFFFFF", color: "#FFFFFF", minWidth: 120}}>
+                            <InputLabel id="demo-simple-select-label" sx={{color: "#FFFFFF"}} >Artist Name</InputLabel>
+                            <Select
+                                sx={{color: "#FFFFFF",
+                                    "& .MuiInputBase-input": {
+                                        color: "#FFFFFF", // Change input text color
+                                    },
+                                    "& .MuiSelect-icon": {
+                                        color: "#FFFFFF", // Change select icon color
+                                    },
+                                    "& .MuiMenuItem-root": {
+                                        color: "#FFFFFF", // Change menu item text color
+                                    },}}
+                                labelId="demo-simple-select-label"
+                                id="demo-simple-select"
+                                value={currentArtistName}
+                                label="Artist Name"
+                                onChange={e => setCurrentArtistName(e.target.value)}
+                            >
+                                {artistList.map((item, index) =>
+                                    (
+                                        <MenuItem key={index} value={item}>{item}</MenuItem>
+                                    ))}
+                            </Select>
+                        </FormControl>
                         <div className="text-xl">
-                            Artist
+                            Change artist name
                         </div>
                         <div className="border-b border-solid">
                             <input onChange={e => setCurrentArtistName(e.target.value)} type="text"
@@ -144,7 +170,7 @@ const AccountPage = () => {
                                    value={currentArtistName} required/>
                         </div>
                         <div className="text-xl">
-                            Email
+                            Change email
                         </div>
                         <div className="border-b border-solid">
                             <input onChange={handleEmailChange} type="text"
@@ -152,18 +178,6 @@ const AccountPage = () => {
                                    style={{backgroundColor: "#020D14"}} value={email} placeholder="Enter your email"
                                    required/>
                         </div>
-                        {/*<div className="text-xl">*/}
-                        {/*    Country*/}
-                        {/*</div>*/}
-                        {/*<div className="border-b border-solid">*/}
-                        {/*    <input onChange={e => setCountry(e.target.value)} type="text" className="border-none focus:border-none bg-no-repeat bg-left city-icon pl-8 w-[24.4rem]" style={{backgroundColor: "#020D14"}} value={country} placeholder="Enter your country" required/>*/}
-                        {/*</div>*/}
-                        {/*<div className="text-xl">*/}
-                        {/*    Organization*/}
-                        {/*</div>*/}
-                        {/*<div className="border-b border-solid">*/}
-                        {/*    <input onChange={e => setOrganization(e.target.value)} type="text" className="border-none focus:border-none bg-no-repeat bg-left organization-icon pl-8 w-[24.4rem]" style={{backgroundColor: "#020D14"}} value={organization} placeholder="Enter your organization" required/>*/}
-                        {/*</div>*/}
                     </div>
                     <div onClick={changeCredentials}
                          className="hover:from-emerald-600 hover:to-sky-400 h-12 px-5 py-4 bg-gradient-to-r from-emerald-500 to-sky-300 rounded-[32px] justify-center items-center gap-2 inline-flex w-[12rem]">

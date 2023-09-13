@@ -6,6 +6,12 @@ import {FiPlusCircle, FiMinusCircle} from "react-icons/fi";
 import SongSerchCard from "./SongSerchCard";
 import moment from "moment";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import {FormControl, InputLabel, MenuItem, Select, TextField} from "@mui/material";
+import dayjs, { Dayjs } from 'dayjs';
+import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 const MainPage = () => {
     const BACKEND_URL = process.env.REACT_APP_BACKEND_URL
     const [cookies] = useCookies(['access_token'])
@@ -51,7 +57,10 @@ const MainPage = () => {
             body: JSON.stringify({id: currentArtistId, song: addedNewSongName})
         })
             .then(response => response.json())
-            .then(() => getSongs(currentArtistName))
+            .then(() => {
+                getSongs(currentArtistName)
+                setAddedNewSongName('')
+            })
     }
     const addSongToSetlist = (song) => {
         const updatedCurrentSetlist = [...currentSetlist.songs]
@@ -88,26 +97,35 @@ const MainPage = () => {
     const getSetlists = (artistName) => {
         fetch(BACKEND_URL + `/setlists/artist/${artistName}`)
             .then(response => response.json())
-            .then(data => {if(data.length !== 0){
-                setCurrentArtistName(artistList[0])
-                setSetlists(data)}})
+            .then(data => setSetlists(data))
     }
     const getSetlist = (artistName) => {
             fetch(BACKEND_URL + `/setlists/artist/${artistName}`)
                 .then(response => response.json())
                 .then(data => {
-                    if (data.length !== 0) {
-                        setCurrentArtistName(artistList[0]);
                         setSetlists(data);
-                        setCurrentSetlist(data[0])
-                    }
+                        if(data.length !== 0){
+                            setCurrentSetlist(data[0])
+                        }
+                        else {
+                            setCurrentSetlist({})
+                        }
                 })
     };
     useEffect(() => {
-        setCurrentVenue(currentSetlist.venue)
-        setCurrentCity(currentSetlist.city)
-        setCurrentDate(moment(currentSetlist.date).utc().format('DD/MM/YYYY'))
-        setCurrentComment(currentSetlist.comment)
+        if(setlists.length !== 0){
+            setCurrentVenue(currentSetlist.venue)
+            setCurrentCity(currentSetlist.city)
+            setCurrentDate(moment(currentSetlist.date).format("YYYY-MM-DD"))
+            setCurrentComment(currentSetlist.comment)
+            console.log(currentDate)
+        }
+        else{
+            setCurrentVenue('')
+            setCurrentCity('')
+            setCurrentDate('')
+            setCurrentComment('')
+        }
     }, [currentSetlist]);
     const saveSetlist = () => {
         fetch(BACKEND_URL + `/setlists/`, {
@@ -131,7 +149,7 @@ const MainPage = () => {
             .then(response => response.json())
             .then(data => {
                 setCurrentSetlist(data)
-                setCurrentDate(moment(data.date).utc().format('DD/MM/YYYY'))
+                setCurrentDate(data.date)
                 setCurrentCity(data.city)
                 setCurrentVenue(data.venue)
                 setCurrentComment(data.comment)
@@ -156,7 +174,7 @@ const MainPage = () => {
             .then(response => response.json())
             .then(data => {
                 setCurrentSetlist(data)
-                setCurrentDate(moment(data.date).utc().format('DD/MM/YYYY'))
+                setCurrentDate(data.date)
                 setCurrentCity(data.city)
                 setCurrentVenue(data.venue)
                 setCurrentComment(data.comment)
@@ -208,12 +226,19 @@ const MainPage = () => {
         }
     }
     useEffect(() => {
+        if (currentArtistName.length !== 0 ){
+            getSongs(currentArtistName)
+            getSetlist(currentArtistName)
+        }
+    }, [currentArtistName]);
+    useEffect(() => {
             if (artistList.length === 0) {
                 setCreateNewArtist(true);
             } else {
                 setCreateNewArtist(false);
                 getSongs(artistList[0]);
                 getSetlist(artistList[0]);
+                setCurrentArtistName(artistList[0])
             }
     }, [artistList]);
     return (
@@ -339,9 +364,10 @@ const MainPage = () => {
                             <div onClick={createSetlist} className="hover:from-emerald-600 hover:to-sky-400 self-center h-12 px-5 py-4 bg-gradient-to-r from-emerald-500 to-sky-300 rounded-[32px] justify-center items-center gap-2 inline-flex w-[12rem]">
                                 <div className="text-white text-base text-600 leading-normal select-none">Create new setlist</div>
                             </div>
-                            {setlists.map((setlist, index) =>
+                            {setlists.length !== 0 ?
+                            setlists.map((setlist, index) =>
                                     <SetlistCard key={index} handleDownloadSetlist={downloadSetlist} handleEditSetlist={editSetlist} handleDeleteSetlist={deleteSetlist} date={moment(setlist.date).utc().format('DD/MM/YYYY')} venue={setlist.venue} comment={setlist.comment} city={setlist.city} setlistId={setlist.id} />
-                                )}
+                                ) : <></>}
 
                     </div>
                     <div className="flex flex-col gap-y-5 w-[50rem]">
@@ -356,19 +382,66 @@ const MainPage = () => {
                             <div className="text-white text-base text-600 leading-normal select-none">Cancel</div>
                             </div>
                         </div>
-                        <div>
-                            {currentArtistName}
-                        </div>
+                        <FormControl variant="standard" className="text-500" sx={{ borderBottom: "2px solid #FFFFFF", borderColor: "#FFFFFF", color: "#FFFFFF", minWidth: 120}}>
+                            <InputLabel id="demo-simple-select-label" sx={{color: "#FFFFFF"}} >Artist Name</InputLabel>
+                            <Select
+                                sx={{color: "#FFFFFF",
+                                    "& .MuiInputBase-input": {
+                                        color: "#FFFFFF", // Change input text color
+                                    },
+                                    "& .MuiSelect-icon": {
+                                        color: "#FFFFFF", // Change select icon color
+                                    },
+                                    "& .MuiMenuItem-root": {
+                                        color: "#FFFFFF", // Change menu item text color
+                                    },}}
+                                labelId="demo-simple-select-label"
+                                id="demo-simple-select"
+                                value={currentArtistName}
+                                label="Artist Name"
+                                onChange={e => setCurrentArtistName(e.target.value)}
+                            >
+                                {artistList.map((item, index) =>
+                                        (
+                                            <MenuItem key={index} value={item}>{item}</MenuItem>
+                                        ))}
+                            </Select>
+                        </FormControl>
                         <div className="flex flex-row justify-evenly">
-                            {currentSetlist.venue !== undefined && currentSetlist.city !== undefined && currentSetlist.date !== undefined && currentSetlist.comment !== undefined ? <>
+                            {setlists.length !== 0 ? <>
                                 <div>
                                     <input onChange={e => setCurrentVenue(e.target.value)} type="text" className="border-b bg-no-repeat bg-left pl-1 w-[11rem]" style={{backgroundColor: "#020D14"}} placeholder="Venue" value={currentVenue} required/>
                                 </div>
                                 <div>
                                     <input onChange={e => setCurrentCity(e.target.value)} type="text" className="border-b bg-no-repeat bg-left pl-1 w-[11rem]" style={{backgroundColor: "#020D14"}} placeholder="City" value={currentCity} required/>
                                 </div>
-                                <div>
-                                    <input onChange={e => setCurrentDate(e.target.value)} type="text" className="border-b bg-no-repeat bg-left pl-1 w-[11rem]" style={{backgroundColor: "#020D14"}} placeholder="Date" value={currentDate} required/>
+                                <div className="text-500 max-w-[11rem]">
+                                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                        <DatePicker
+                                            label="Setlist date"
+                                            value={dayjs(currentDate)}
+                                            onChange={(newValue) => setCurrentDate(newValue)}
+                                            inputFormat="dd-MM-yyyy"
+                                            renderInput={(params) => <TextField {...params} helperText={null} />}
+                                            sx={{
+                                                "& .MuiInputBase-input": {
+                                                    color: "#FFFFFF", // изменить цвет текста внутри инпута
+                                                },
+                                                "& .MuiInputLabel-root": {
+                                                    color: "#FFFFFF", // изменить цвет текста метки (label)
+                                                },
+                                                "& .MuiFormLabel-root": {
+                                                    color: "#FFFFFF", // изменить цвет текста метки (label) при фокусе
+                                                },
+                                                "& .MuiInput-underline:before": {
+                                                    borderBottomColor: "#FFFFFF", // изменить цвет нижней границы инпута
+                                                },
+                                                "& .MuiInput-underline:hover:not(.Mui-disabled):before": {
+                                                    borderBottomColor: "#FFFFFF", // изменить цвет нижней границы инпута при наведении
+                                                },
+                                            }}
+                                        />
+                                    </LocalizationProvider>
                                 </div>
                                 <div>
                                     <input onChange={e => setCurrentComment(e.target.value)} type="text" className="border-b bg-no-repeat bg-left pl-1 w-[11rem]" style={{backgroundColor: "#020D14"}} placeholder="Comment" value={currentComment} required/>
@@ -393,7 +466,8 @@ const MainPage = () => {
                                 <Droppable droppableId="songs">
                                     {(provided) => (
                                         <div {...provided.droppableProps} ref={provided.innerRef}>
-                                            {currentSetlist.songs !== undefined ? (
+                                            {setlists.length !==0 ?
+                                            currentSetlist.songs !== undefined ? (
                                                 currentSetlist.songs.map((song, index) => (
                                                     <Draggable key={index} draggableId={`song-${index}`} index={index}>
                                                         {(provided) => (
@@ -409,7 +483,7 @@ const MainPage = () => {
                                                 ))
                                             ) : (
                                                 <></>
-                                            )}
+                                            ): <></>}
                                             {provided.placeholder}
                                         </div>
                                     )}
