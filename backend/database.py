@@ -109,6 +109,8 @@ class DB:
     def add_user_to_artist(self, artist_id: str, user_id: str):
         user = self.get_user_by_id(user_id)
         artist = self.get_artist_by_id(artist_id)
+        if not user or not artist:
+            return None
         new_user = self.users.update_one(
             {"_id": objectid.ObjectId(user_id)},
             {"$push": {"artists": artist["name"]}}, upsert=False
@@ -206,6 +208,15 @@ class DB:
                 return None
         else:
             return None
+
+    def update_password(self, email: str, old_password: str, new_password: str):
+        user = self.login_user(email, old_password)
+        if user is None:
+            return None
+        new_password = bytes(new_password, 'utf-8')
+        password_hash = bcrypt.hashpw(new_password, user["salt"])
+        self.update_user(user["_id"], {"password_hash": password_hash})
+        return self.get_user_by_id(user["_id"])
 
     # FIXME: delete rest
 

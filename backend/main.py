@@ -100,6 +100,17 @@ async def create_artist(artist: schemas.ArtistCreate):
     return new
 
 
+@app.post("/artists/user/", response_model=schemas.Artist, tags=[Tags.artists])
+async def add_user_to_artist(data: schemas.ArtistUser):
+    user = db.get_user_by_login(data.login)
+    if not user:
+        raise HTTPException(status_code=400, detail="User not found")
+    artist = db.add_user_to_artist(data.id, user[0]["_id"])
+    if not artist:
+        raise HTTPException(status_code=400, detail="Artist not found")
+    return artist
+
+
 @app.delete("/artists/{artist_id}", response_model=schemas.DeleteResponse, tags=[Tags.artists])
 async def delete_artist(artist_id: str):
     return {"deleted_count": db.delete_artist(artist_id)}
@@ -161,6 +172,14 @@ async def update_user(item: schemas.Update):
 @app.delete("/users/{user_id}", response_model=schemas.DeleteResponse, tags=[Tags.users])
 async def delete_user(user_id: str):
     return {"deleted_count": db.delete_user(user_id)}
+
+
+@app.post("/users/update_password", tags=[Tags.users])
+async def update_user_password(data: schemas.UserUpdatePassword):
+    user = db.update_password(data.email, data.password, data.new_password)
+    if not user:
+        raise HTTPException(status_code=400, detail="Incorrect username or password")
+    return {"status": "Done"}
 
 
 

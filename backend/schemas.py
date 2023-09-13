@@ -46,6 +46,11 @@ class ArtistSong(BaseModel):
     song: str
 
 
+class ArtistUser(BaseModel):
+    id: str
+    login: str
+
+
 class Artist(ArtistBase):
     id: Union[str, Any]
 
@@ -72,6 +77,10 @@ class UserCreate(BaseModel):
 class UserLogin(BaseModel):
     email: str
     password: str
+
+
+class UserUpdatePassword(UserLogin):
+    new_password: str
 
 
 class User(UserBase):
