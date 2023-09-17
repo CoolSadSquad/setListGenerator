@@ -1,0 +1,20 @@
+### react template
+.DS_*
+logs
+**/*.backup.*
+**/*.back.*
+
+node_modules
+bower_components
+
+*.sublime*
+.env
+psd
+thumb
+sketch
+.gitignore
+.placeholder
+README.md
+/src/App.test.js
+/src/reportWebVitals.js
+/src/setupTests.js
