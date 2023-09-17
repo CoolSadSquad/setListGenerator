@@ -3,7 +3,7 @@ from typing import Union
 
 from jose import JWTError, jwt
 
-from credentials import MONGO_URI
+# from credentials import MONGO_URI
 from pymongo import MongoClient
 import time, bcrypt, hashlib
 from dotenv import load_dotenv
