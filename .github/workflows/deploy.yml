@@ -23,19 +23,19 @@ jobs:
           DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
           DOPPLER_PROJECT: setlist-generator
           
-      - name: Where am i?
-        run: cd /home/runner/work/setListGenerator
+      # - name: Where am i?
+      #   run: cd /home/runner/work/setListGenerator
         
-      - name: Build backend Docker image
-        run: |
-          ls -lha
-          cd /home/runner/work/setListGenerator
-          docker build -t my-backend-image ./backend
+      # - name: Build backend Docker image
+      #   run: |
+      #     ls -lha
+      #     cd /home/runner/work/setListGenerator
+      #     docker build -t my-backend-image ./backend
 
-      - name: Build frontend Docker image
-        run:  |
-          cd /home/runner/work/setListGenerator
-          docker build -t my-frontend-image ./frontend
+      # - name: Build frontend Docker image
+      #   run:  |
+      #     cd /home/runner/work/setListGenerator
+      #     docker build -t my-frontend-image ./frontend
 
       - name: SSH into remote server and update Docker Stack
         uses: appleboy/ssh-action@master
