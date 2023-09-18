@@ -24,7 +24,7 @@ jobs:
           DOPPLER_PROJECT: setlist-generator
           
       - name: Where am i?
-        run: pwd
+        run: ls -lha
         
       - name: Build backend Docker image
         run: docker build -t my-backend-image ./backend
