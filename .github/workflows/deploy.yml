@@ -28,6 +28,7 @@ jobs:
         
       - name: Build backend Docker image
         run: |
+          ls -lha
           cd /home/runner/work/setListGenerator
           docker build -t my-backend-image ./backend
 
