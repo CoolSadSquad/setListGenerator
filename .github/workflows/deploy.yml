@@ -22,7 +22,10 @@ jobs:
         env:
           DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
           DOPPLER_PROJECT: setlist-generator
-
+          
+      - name: Where am i?
+        run: pwd
+        
       - name: Build backend Docker image
         run: docker build -t my-backend-image ./backend
 
