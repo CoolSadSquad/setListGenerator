@@ -1,51 +1,39 @@
-- name: Install Doppler CLI
-  run: |
-    curl -L https://cli.doppler.com/install | sh
-    sudo mv /usr/local/bin/doppler /usr/bin/
-  env:
-    DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
+name: Deploy and Update
 
-- name: Retrieve secrets from Doppler
-  run: doppler secrets download --no-file --format env
-  env:
-    DOPPLER_PROJECT: setlist-generator
+on:
+  push:
+    branches:
+      - main
 
-- name: Deploy to Docker Swarm
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
 
-  on:
-    push:
-      branches:
-        - main
+    steps:
+      - name: Install Doppler CLI
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
+        run: |
+          curl -L https://cli.doppler.com/install | sh
+          sudo mv /usr/local/bin/doppler /usr/bin/
 
-  jobs:
-    deploy:
-      runs-on: ubuntu-latest
+      - name: Retrieve secrets from Doppler
+        run: doppler secrets download --no-file --format env
+        env:
+          DOPPLER_PROJECT: setlist-generator
 
-      steps:
-        - name: Checkout code
-          uses: actions/checkout@v2
+      - name: Build backend Docker image
+        run: docker build -t my-backend-image ./backend
 
-        - name: Build backend Docker image
-          run: docker build -t my-backend-image ./backend
+      - name: Build frontend Docker image
+        run: docker build -t my-frontend-image ./frontend
 
-        - name: Build frontend Docker image
-          run: docker build -t my-frontend-image ./frontend
-
-        - name: Login to Docker Hub
-          run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
-
-        - name: Push backend Docker image
-          run: docker push my-backend-image
-
-        - name: Push frontend Docker image
-          run: docker push my-frontend-image
-
-        - name: SSH into remote server and update Docker Stack
-          uses: appleboy/ssh-action@master
-          with:
-            host: ${{ secrets.REMOTE_SERVER }}
-            username: ${{ secrets.REMOTE_USER }}
-            key: ${{ secrets.SSH_PRIVATE_KEY }}
-            port: ${{ secrets.REMOTE_PORT }}
-            script: |
-              docker stack deploy -c docker-compose.yml setlist-generator
+      - name: SSH into remote server and update Docker Stack
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.REMOTE_SERVER }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.REMOTE_PORT }}
+          script: |
+            docker stack deploy -c docker-compose.yml setlist-generator
