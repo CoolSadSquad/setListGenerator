@@ -16,7 +16,7 @@ jobs:
         run: |
           curl -LO https://cli.doppler.com/install.sh
           chmod +x install.sh
-          ./install.sh
+          sudo ./install.sh
           sudo mv /usr/local/bin/doppler /usr/bin/
           doppler --version
 
