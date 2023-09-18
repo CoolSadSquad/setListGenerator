@@ -27,10 +27,14 @@ jobs:
         run: cd /home/runner/work/setListGenerator
         
       - name: Build backend Docker image
-        run: docker build -t my-backend-image ./backend
+        run: |
+          cd /home/runner/work/setListGenerator
+          docker build -t my-backend-image ./backend
 
       - name: Build frontend Docker image
-        run: docker build -t my-frontend-image ./frontend
+        run:  |
+          cd /home/runner/work/setListGenerator
+          docker build -t my-frontend-image ./frontend
 
       - name: SSH into remote server and update Docker Stack
         uses: appleboy/ssh-action@master
@@ -40,4 +44,5 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.REMOTE_PORT }}
           script: |
+            cd /home/runner/work/setListGenerator
             docker stack deploy -c docker-compose.yml setlist-generator
