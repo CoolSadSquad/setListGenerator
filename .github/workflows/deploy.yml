@@ -20,6 +20,7 @@ jobs:
       - name: Retrieve secrets from Doppler
         run: doppler secrets download --no-file --format env
         env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
           DOPPLER_PROJECT: setlist-generator
 
       - name: Build backend Docker image
