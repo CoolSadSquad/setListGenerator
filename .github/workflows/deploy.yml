@@ -14,7 +14,7 @@ jobs:
         env:
           DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
         run: |
-          curl -L https://cli.doppler.com/install | sh
+          curl -LO https://cli.doppler.com/install.sh | sh
           sudo mv /usr/local/bin/doppler /usr/bin/
 
       - name: Retrieve secrets from Doppler
