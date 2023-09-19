@@ -45,5 +45,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.REMOTE_PORT }}
           script: |
-            cd /home/runner/work/setListGenerator
+            cd ~/home/Github/setListGenerator
+            git fetch
+            git pull
             docker stack deploy -c docker-compose.yml setlist-generator
