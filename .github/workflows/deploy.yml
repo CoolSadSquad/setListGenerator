@@ -10,6 +10,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
       - name: Install Doppler CLI
         env:
           DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
@@ -26,6 +29,16 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
+      - name: Build and push Docker images
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+        run: |
+          echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USERNAME --password-stdin
+          docker buildx create --use
+          docker buildx build --tag elicot/setlist-frontend-image:latest --push /frontend
+          docker buildx build --tag elicot/setlist-backend-image:latest --push /backend
+
       - name: SSH into remote server and update Docker Stack
         uses: appleboy/ssh-action@master
         with:
@@ -34,17 +47,11 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.REMOTE_PORT }}
           script: |
-            echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USERNAME --password-stdin
-            docker buildx create --use
-            docker buildx build --tag elicot/setlist-generator-frontend:latest --push /home/Github/setListGenerator/frontend
-            docker buildx build --tag elicot/setlist-generator-backend:latest --push /home/Github/setListGenerator/backend
             cd /home/Github/setListGenerator
             git fetch
             git pull
             docker stack deploy -c docker-stack.yml setlist-generator
         env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
           MONGO_URI: ${{ secrets.MONGO_URI }}
           REACT_APP_BACKEND_URL: ${{ secrets.REACT_APP_BACKEND_URL }}
