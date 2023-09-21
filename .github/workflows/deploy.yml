@@ -14,22 +14,14 @@ jobs:
         env:
           DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
         run: |
-          curl -LO https://cli.doppler.com/install.sh
-          chmod +x install.sh
-          sudo ./install.sh
-          sudo mv /usr/local/bin/doppler /usr/bin/
+          (curl -Ls --tlsv1.2 --proto "=https" --retry 3 https://cli.doppler.com/install.sh || wget -t 3 -qO- https://cli.doppler.com/install.sh) | sudo sh
           doppler --version
 
       - name: Retrieve secrets from Doppler
         run: doppler secrets download --no-file --format env
         env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
           DOPPLER_PROJECT: setlist-generator
-
-      - name: Build backend Docker image
-        run: docker build -t my-backend-image ./backend
-
-      - name: Build frontend Docker image
-        run: docker build -t my-frontend-image ./frontend
 
       - name: SSH into remote server and update Docker Stack
         uses: appleboy/ssh-action@master
@@ -39,4 +31,11 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.REMOTE_PORT }}
           script: |
-            docker stack deploy -c docker-compose.yml setlist-generator
+            cd /home/Github/setListGenerator
+            git fetch
+            git pull
+            docker stack deploy -c docker-stack.yml setlist-generator
+        env:
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+          REACT_APP_BACKEND_URL: ${{ secrets.REACT_APP_BACKEND_URL }}

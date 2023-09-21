@@ -1,0 +1,27 @@
+version: '3.7'
+services:
+  backend:
+    build:
+      context: /backend
+      dockerfile: Dockerfile
+    ports:
+      - "8888:8888"
+    environment:
+      - MONGO_URI=${MONGO_URI}
+      - SECRET_KEY=${SECRET_KEY}
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+  frontend:
+    build:
+      context: /frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_BACKEND_URL=${REACT_APP_BACKEND_URL}
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
