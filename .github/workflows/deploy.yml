@@ -36,7 +36,6 @@ jobs:
         run: |
           echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USERNAME --password-stdin
           docker buildx create --use
-          ls -lha
           docker buildx build --tag elicot/setlist-frontend-image:latest --push frontend
           docker buildx build --tag elicot/setlist-backend-image:latest --push backend
 
