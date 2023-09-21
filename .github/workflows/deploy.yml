@@ -23,6 +23,18 @@ jobs:
           DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
           DOPPLER_PROJECT: setlist-generator
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Build and push Docker images
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+        run: |
+          echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USERNAME --password-stdin
+          docker buildx create --use
+          docker buildx build --tag elicot/setlist-generator-frontend:latest --push /home/Github/setListGenerator/frontend
+          docker buildx build --tag elicot/setlist-generator-backend:latest --push /home/Github/setListGenerator/backend
       - name: SSH into remote server and update Docker Stack
         uses: appleboy/ssh-action@master
         with:
