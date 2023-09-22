@@ -10,6 +10,7 @@ services:
     environment:
       - MONGO_URI=${MONGO_URI}
       - SECRET_KEY=${SECRET_KEY}
+      - DOPPLER_TOKEN=${DOPPLER_TOKEN}
     deploy:
       replicas: 2
       restart_policy:

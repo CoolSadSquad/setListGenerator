@@ -3,7 +3,7 @@ FROM python:3.9
 
 #
 WORKDIR /code
-
+ENV DOPPLER_TOKEN=${DOPPLER_TOKEN}
 #
 COPY ./requirements.txt /code/requirements.txt
 
