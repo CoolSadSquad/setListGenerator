@@ -52,7 +52,7 @@ jobs:
             git pull
             docker stack deploy -c docker-stack.yml setlist-generator
         env:
-          SECRET_KEY: ${{ secrets.SECRET_KEY }}
-          MONGO_URI: ${{ secrets.MONGO_URI }}
-          REACT_APP_BACKEND_URL: ${{ secrets.REACT_APP_BACKEND_URL }}
+          SECRET_KEY: $SECRET_KEY
+          MONGO_URI: $MONGO_URI
+          REACT_APP_BACKEND_URL: $REACT_APP_BACKEND_URL
           DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
