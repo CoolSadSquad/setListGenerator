@@ -12,7 +12,7 @@ services:
       - SECRET_KEY=${SECRET_KEY}
       - DOPPLER_TOKEN=${DOPPLER_TOKEN}
     deploy:
-      replicas: 2
+      replicas: 1
       restart_policy:
         condition: on-failure
   frontend:
@@ -26,6 +26,6 @@ services:
       - DOPPLER_TOKEN=${DOPPLER_TOKEN}
       - REACT_APP_BACKEND_URL=${REACT_APP_BACKEND_URL}
     deploy:
-      replicas: 2
+      replicas: 1
       restart_policy:
         condition: on-failure
