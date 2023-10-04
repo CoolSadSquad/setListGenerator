@@ -24,7 +24,7 @@ services:
       - "3000:3000"
     environment:
       - DOPPLER_TOKEN=${DOPPLER_TOKEN}
-      - REACT_APP_BACKEND_URL=${REACT_APP_BACKEND_URL}
+      - REACT_APP_BACKEND_URL=backend
     deploy:
       replicas: 1
       restart_policy:
